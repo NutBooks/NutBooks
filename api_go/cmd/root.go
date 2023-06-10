@@ -1,16 +1,17 @@
 package cmd
 
 import (
+	"api_go/router"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"strings"
 )
 
 // ----------------------------------------------------------------
 //
 // Base
+// https://cobra.dev/#getting-started
 //
 // ----------------------------------------------------------------
 
@@ -51,6 +52,6 @@ var runCmd = &cobra.Command{
 			"|____/ \\___/ \\___/|_|\\_\\_| |_| |_|\\__,_|_|  |_|\\_\\___/")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Run Server: " + strings.Join(args, " "))
+		router.RunServer()
 	},
 }
