@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
