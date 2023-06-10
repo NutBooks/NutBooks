@@ -39,3 +39,10 @@ poetry add pip_package_name; poetry install # use this, not pip install
 ```
 
 Go to <http://localhost:8000/docs>
+
+
+## Releasse History
+
+- Version 1.0.0
+  - 
+
