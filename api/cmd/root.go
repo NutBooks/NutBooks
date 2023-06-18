@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"api_go/router"
+	"api/router"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"

@@ -7,8 +7,8 @@ Vue.js + Vite + TailwindCSS
 ### Prerequisites
 
 - node v18
-  - You can use nvm for convenience
-    - <https://github.com/nvm-sh/nvm>
+    - You can use nvm for convenience
+        - <https://github.com/nvm-sh/nvm>
 
 ```shell
 nvm use # node v18
@@ -21,25 +21,16 @@ npm run dev
 
 ## API
 
-FastAPI
-
 ### Prerequisites
 
-- Poetry
-  - <https://python-poetry.org/docs/#installation>
-  - <https://blog.gyus.me/2020/introduce-poetry/>
+- go 1.20
 
 ```shell
 cd api
-poetry init
-poetry install
-poetry run uvicorn main:app --reload
+go build -a -o bin/main .
+bin/main run
 
-poetry add pip_package_name; poetry install # use this, not pip install
 ```
-
-Go to <http://localhost:8000/docs>
-
 
 ## Releasse History
 
