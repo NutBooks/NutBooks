@@ -3,5 +3,16 @@
     "info": {
         "contact": {}
     },
-    "paths": {}
+    "paths": {
+        "/": {
+            "get": {
+                "summary": "Root URL - for health check",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
 }

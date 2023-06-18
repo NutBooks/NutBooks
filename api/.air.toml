@@ -19,8 +19,7 @@ tmp_dir = "tmp"
   stop_on_error = true
   send_interrupt = false
   kill_delay = 500 # ms
-  include_file = []
-  rerun = true
+  rerun = false
   rerun_delay = 500 # ms
 
 [log]

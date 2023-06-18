@@ -1,4 +1,10 @@
 info:
   contact: {}
-paths: {}
+paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: Root URL - for health check
 swagger: "2.0"

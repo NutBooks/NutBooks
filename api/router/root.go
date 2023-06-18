@@ -20,6 +20,10 @@ import (
 	_ "api/docs"
 )
 
+//	@title		Bookmarks API
+//	@version	1.0.0
+
+// @contact.email	cheesecat47@gmail.com
 func RunServer() {
 
 	app := fiber.New(fiber.Config{
@@ -32,14 +36,12 @@ func RunServer() {
 		Max:        10,
 	}))
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hi")
-	})
-
 	// Swagger docs
 	// https://github.com/gofiber/swagger
 	// https://github.com/swaggo/swag
-	app.Get("/swagger/*", swagger.HandlerDefault)
+	app.Get("/docs/*", swagger.HandlerDefault)
+
+	app.Get("/", ApiRoot)
 
 	// Graceful shutdown
 	// https://github.com/gofiber/recipes/tree/master/graceful-shutdown
@@ -63,4 +65,13 @@ func RunServer() {
 	// cleanup tasks
 	// db.Close()
 	log.Println("Fiber was successful shutdown.")
+}
+
+// HealthCheck godoc
+//
+//	@Summary	Root URL - for health check
+//	@Success	200
+//	@Router		/ [get]
+func ApiRoot(c *fiber.Ctx) error {
+	return c.SendString("Hi")
 }
