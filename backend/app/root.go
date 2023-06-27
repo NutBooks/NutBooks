@@ -8,6 +8,7 @@
 package app
 
 import (
+	"api/configs"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/swagger"
@@ -27,9 +28,9 @@ import (
 // @licence.name	MIT
 func RunServer() {
 
-	app := fiber.New(fiber.Config{
-		IdleTimeout: 5 * time.Second,
-	})
+	config := configs.FiberConfig()
+
+	app := fiber.New(config)
 
 	// limit 3 requests per 10 seconds max
 	app.Use(limiter.New(limiter.Config{
