@@ -9,10 +9,10 @@ package app
 
 import (
 	"api/app/middlewares"
+	"api/app/routes"
 	"api/configs"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/swagger"
 	"log"
 	"os"
 	"os/signal"
@@ -23,10 +23,11 @@ import (
 )
 
 // RunServer godoc
-// @title			NutBooks API
-// @version			1.0.0
-// @contact.email	cheesecat47@gmail.com
-// @licence.name	MIT
+//
+//	@title			NutBooks API
+//	@version		1.0.0
+//	@contact.email	cheesecat47@gmail.com
+//	@licence.name	MIT
 func RunServer() {
 
 	config := configs.FiberConfig()
@@ -41,12 +42,9 @@ func RunServer() {
 		Max:        10,
 	}))
 
-	// Swagger docs
-	// https://github.com/gofiber/swagger
-	// https://github.com/swaggo/swag
-	app.Get("/docs/*", swagger.HandlerDefault)
-
-	app.Get("/", ApiRoot)
+	// https://github.com/swaggo/swag#declarative-comments-format
+	routes.SwaggerRoute(app)
+	routes.PublicRoutes(app)
 
 	// Graceful shutdown
 	// https://github.com/gofiber/recipes/tree/master/graceful-shutdown
@@ -70,12 +68,4 @@ func RunServer() {
 	// cleanup tasks
 	// db.Close()
 	log.Println("Fiber was successful shutdown.")
-}
-
-// ApiRoot godoc
-// @Summary	Root URL - for health check
-// @Success	200
-// @Router		/ [get]
-func ApiRoot(c *fiber.Ctx) error {
-	return c.SendString("Hi")
 }

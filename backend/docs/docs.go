@@ -16,8 +16,11 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/api/v1/": {
             "get": {
+                "tags": [
+                    "/api/v1"
+                ],
                 "summary": "Root URL - for health check",
                 "responses": {
                     "200": {

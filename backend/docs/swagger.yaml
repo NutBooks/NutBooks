@@ -1,10 +1,12 @@
 info:
   contact: {}
 paths:
-  /:
+  /api/v1/:
     get:
       responses:
         "200":
           description: OK
       summary: Root URL - for health check
+      tags:
+      - /api/v1
 swagger: "2.0"
