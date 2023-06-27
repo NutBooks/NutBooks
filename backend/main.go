@@ -1,7 +1,7 @@
 package main
 
 import (
-	"api/router"
+	"api/app"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"
@@ -53,6 +53,6 @@ var runCmd = &cobra.Command{
 		)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		router.RunServer()
+		app.RunServer()
 	},
 }

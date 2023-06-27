@@ -5,7 +5,7 @@
 //
 // ----------------------------------------------------------------
 
-package router
+package app
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -20,10 +20,11 @@ import (
 	_ "api/docs"
 )
 
-//	@title		Bookmarks API
-//	@version	1.0.0
-
+// RunServer godoc
+// @title			NutBooks API
+// @version			1.0.0
 // @contact.email	cheesecat47@gmail.com
+// @licence.name	MIT
 func RunServer() {
 
 	app := fiber.New(fiber.Config{
@@ -67,11 +68,10 @@ func RunServer() {
 	log.Println("Fiber was successful shutdown.")
 }
 
-// HealthCheck godoc
-//
-//	@Summary	Root URL - for health check
-//	@Success	200
-//	@Router		/ [get]
+// ApiRoot godoc
+// @Summary	Root URL - for health check
+// @Success	200
+// @Router		/ [get]
 func ApiRoot(c *fiber.Ctx) error {
 	return c.SendString("Hi")
 }
