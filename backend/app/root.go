@@ -8,6 +8,7 @@
 package app
 
 import (
+	"api/app/middlewares"
 	"api/configs"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -31,6 +32,8 @@ func RunServer() {
 	config := configs.FiberConfig()
 
 	app := fiber.New(config)
+
+	middlewares.FiberMiddleware(app)
 
 	// limit 3 requests per 10 seconds max
 	app.Use(limiter.New(limiter.Config{
