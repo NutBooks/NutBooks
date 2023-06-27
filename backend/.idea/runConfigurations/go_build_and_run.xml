@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build and run" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="Bookmarks" />
+    <working_directory value="$PROJECT_DIR$/api" />
+    <go_parameters value="-o bin/main main.go" />
+    <parameters value="run" />
+    <kind value="DIRECTORY" />
+    <directory value="$PROJECT_DIR$/api" />
+    <filePath value="$PROJECT_DIR$/api" />
+    <output_directory value="$PROJECT_DIR$/api/bin" />
+    <method v="2" />
+  </configuration>
+</component>
