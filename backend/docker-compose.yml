@@ -6,9 +6,8 @@ volumes:
 services:
   db:
     image: mysql:8
-    restart: always
+    restart: unless-stopped
     volumes:
-      - "./db/sql/:/docker-entrypoint-initdb.d/"
       - mysql_data:/var/lib/mysql
     ports:
       - ${MYSQL_PORT}:3306
@@ -23,6 +22,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: ${DOCKER_REGISTRY}/bookmarks-api
-    restart: always
+    restart: unless-stopped
     depends_on:
       - db

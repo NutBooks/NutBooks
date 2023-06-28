@@ -2,6 +2,7 @@ package main
 
 import (
 	"api/app"
+	"api/db"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"
@@ -30,6 +31,7 @@ func init() {
 	//viper.SetDefault("author", "cheesecat47 <cheesecat47@gmail.com>")
 
 	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(migrateDB)
 }
 
 // ----------------------------------------------------------------
@@ -54,5 +56,15 @@ var runCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		app.RunServer()
+	},
+}
+
+var migrateDB = &cobra.Command{
+	Use:   "migrate [options]",
+	Short: "Migrate DB",
+	Long:  `Migrate MySQL database`,
+	Run: func(cmd *cobra.Command, args []string) {
+		log.Println("Migrate")
+		db.MigrateMysql()
 	},
 }
