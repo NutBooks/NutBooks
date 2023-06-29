@@ -10,7 +10,22 @@
 | DB  |   MYSQL_PASSWORD    |   1234    |                                                     |
 | DB  | MYSQL_ROOT_PASSWORD |   5678    |                    root 계정 비밀번호                     |
 
-## Migrate DB
+## API 서버 빌드
+
+```bash
+go build -o ./bin/main main.go
+
+```
+
+## DB 실행
+
+### MySQL 컨테이너 실행
+
+```bash
+docker compose up -d db; docker compose logs -f --tail=1000 db
+```
+
+### Migrate DB
 
 - DB 설치 후 최초 1회 실행
     ```bash

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"api/db/models"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -23,4 +24,9 @@ func MigrateMysql() {
 		log.Panicf("Cannot connect to MySQL: %v", err)
 	}
 	log.Println(db, err)
+
+	err = db.AutoMigrate(&models.User{}, &models.Bookmark{}, &models.Keyword{})
+	if err != nil {
+		log.Panic(err)
+	}
 }
