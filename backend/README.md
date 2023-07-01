@@ -31,3 +31,30 @@ docker compose up -d db; docker compose logs -f --tail=1000 db
     ```bash
     $ ./bin/main migrate
     ```
+
+## 실행
+
+```bash
+./bin/main run
+```
+
+### Swagger API 문서
+
+- <http://localhost:3000/docs>
+
+## 개발 환경
+
+### 테스팅
+
+```bash
+go test -v -cover ./...
+```
+
+## 참고 자료
+
+- Effective Go
+    - <https://go.dev/doc/effective_go>
+- Go 코딩 스타일: Uber의 Go 스타일 가이드 참고
+    - <https://github.com/TangoEnSkai/uber-go-style-guide-kr>
+- 주석 형식 가이드
+    - <https://go.dev/doc/comment>
