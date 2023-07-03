@@ -37,10 +37,4 @@ jobs:
           go get .
 
       - name: Test
-        run: go test -v -cover > subdir/TestResults-${{ matrix.go-version }}.txt
-
-      - name: Upload Go test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: Go-results-${{ matrix.go-version }}
-          path: subdir/TestResults-${{ matrix.go-version }}.txt
+        run: go test -v -cover ./...
