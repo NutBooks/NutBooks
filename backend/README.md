@@ -47,7 +47,7 @@ docker compose up -d db; docker compose logs -f --tail=1000 db
 ### 테스팅
 
 ```bash
-go test -v -cover ./...
+go test -v -cover ./... > TestResults.json
 ```
 
 ## 참고 자료
