@@ -1,5 +1,7 @@
 # NutBooks/backend
 
+[![Backend - API server tests](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml)
+
 ## Env Variables
 
 | 서비스 |         변수명         |   값(예시)   |                         비고                          |
