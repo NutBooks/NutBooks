@@ -8,5 +8,36 @@ paths:
           description: OK
       summary: Root URL - for health check
       tags:
-      - /api/v1
+      - /
+  /api/v1/bookmark/new:
+    post:
+      description: 새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
+      parameters:
+      - description: User ID
+        in: query
+        name: userId
+        type: integer
+      - description: Title
+        in: query
+        name: title
+        type: string
+      - description: Link(URL)
+        in: query
+        name: link
+        required: true
+        type: string
+      - description: keywords
+        in: query
+        name: keywords
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: 북마크를 DB에 추가하는 API
+      tags:
+      - bookmark
 swagger: "2.0"

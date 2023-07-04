@@ -12,5 +12,5 @@ type User struct {
 	Password    string `gorm:"not null;"`
 	Name        string `gorm:"not null;"`
 	AccessToken string
-	Bookmarks   []Bookmark `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	//Bookmarks   []Bookmark `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
