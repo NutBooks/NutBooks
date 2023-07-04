@@ -1,6 +1,7 @@
 # NutBooks/backend
 
-[![Backend - API server tests](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml)
+[![Backend - API server Main](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml)
+[![Backend - API server Dev](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml/badge.svg?branch=develop)](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml)
 
 ## Env Variables
 
@@ -49,7 +50,7 @@ docker compose up -d db; docker compose logs -f --tail=1000 db
 ### 테스팅
 
 ```bash
-go test -v -cover ./... > TestResults.json
+go test -v -cover ./... | tee TestResults
 ```
 
 ## 참고 자료

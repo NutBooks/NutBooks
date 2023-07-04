@@ -12,17 +12,17 @@ func PublicRoutes(app *fiber.App) {
 
 	route := app.Group("/api/v1")
 
-	route.Get("/", root)
+	route.Get("/", Root)
 	route.Post("/bookmark/new", controllers.AddBookmark)
 }
 
-// root func
+// Root func
 //
 //	@Summary	Root URL - for health check
 //	@Success	200
 //	@Tags		/
 //	@BasePath	/api/v1
 //	@Router		/api/v1/ [get]
-func root(c *fiber.Ctx) error {
+func Root(c *fiber.Ctx) error {
 	return c.SendString("Hi")
 }
