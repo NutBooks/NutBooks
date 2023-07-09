@@ -7,6 +7,12 @@ import (
 	"log"
 )
 
+type AddBookmarkJsonRequest struct {
+	UserID uint   `json:"user_id"`
+	Title  string `json:"title"`
+	Link   string `json:"link" example:"https://cheesecat47.github.io"`
+}
+
 // AddBookmark
 //
 //	@Summary		북마크를 DB에 추가하는 API
@@ -14,10 +20,7 @@ import (
 //	@Tags			bookmark
 //	@Accept			json
 //	@Produce		json
-//	@Param			userId		body	uint	false	"User ID"
-//	@Param			title		body	string	false	"Title"
-//	@Param			link		body	string	true	"Link(URL)"
-//	@Param			keywords	body	string	false	"keywords"
+//	@Param			request	body	AddBookmarkJsonRequest	true	"body params"
 //	@Success		200
 //	@Failure		400
 //	@BasePath		/api/v1

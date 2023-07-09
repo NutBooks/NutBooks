@@ -32,36 +32,12 @@
                 "summary": "북마크를 DB에 추가하는 API",
                 "parameters": [
                     {
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "body",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "description": "Title",
-                        "name": "title",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Link(URL)",
-                        "name": "link",
+                        "description": "body params",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "keywords",
-                        "name": "keywords",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/controllers.AddBookmarkJsonRequest"
                         }
                     }
                 ],
@@ -72,6 +48,23 @@
                     "400": {
                         "description": "Bad Request"
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers.AddBookmarkJsonRequest": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "type": "string",
+                    "example": "https://cheesecat47.github.io"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         }

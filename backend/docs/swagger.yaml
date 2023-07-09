@@ -1,3 +1,14 @@
+definitions:
+  controllers.AddBookmarkJsonRequest:
+    properties:
+      link:
+        example: https://cheesecat47.github.io
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
 info:
   contact: {}
 paths:
@@ -15,27 +26,12 @@ paths:
       - application/json
       description: 새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
       parameters:
-      - description: User ID
+      - description: body params
         in: body
-        name: userId
-        schema:
-          type: integer
-      - description: Title
-        in: body
-        name: title
-        schema:
-          type: string
-      - description: Link(URL)
-        in: body
-        name: link
+        name: request
         required: true
         schema:
-          type: string
-      - description: keywords
-        in: body
-        name: keywords
-        schema:
-          type: string
+          $ref: '#/definitions/controllers.AddBookmarkJsonRequest'
       produces:
       - application/json
       responses:
