@@ -35,6 +35,15 @@ func AddBookmark(c *fiber.Ctx) error {
 		})
 	}
 
+	log.Println("bookmark: ", bookmark)
+
+	if bookmark.Link == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "link is required parameter",
+		})
+	}
+
 	db, err := conn.GetDB()
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
