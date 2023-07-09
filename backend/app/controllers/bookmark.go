@@ -12,11 +12,12 @@ import (
 //	@Summary		북마크를 DB에 추가하는 API
 //	@Description	새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
 //	@Tags			bookmark
+//	@Accept			json
 //	@Produce		json
-//	@Param			userId		query	uint	false	"User ID"
-//	@Param			title		query	string	false	"Title"
-//	@Param			link		query	string	true	"Link(URL)"
-//	@Param			keywords	query	string	false	"keywords"
+//	@Param			userId		body	uint	false	"User ID"
+//	@Param			title		body	string	false	"Title"
+//	@Param			link		body	string	true	"Link(URL)"
+//	@Param			keywords	body	string	false	"keywords"
 //	@Success		200
 //	@Failure		400
 //	@BasePath		/api/v1
@@ -27,7 +28,7 @@ func AddBookmark(c *fiber.Ctx) error {
 
 	bookmark := &models.Bookmark{}
 
-	if err := c.QueryParser(bookmark); err != nil {
+	if err := c.BodyParser(bookmark); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   true,
 			"message": err.Error(),
@@ -51,5 +52,8 @@ func AddBookmark(c *fiber.Ctx) error {
 	}
 	log.Println(result)
 
-	return nil
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"message": "Success",
+	})
 }

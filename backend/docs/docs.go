@@ -32,6 +32,9 @@ const docTemplate = `{
         "/api/v1/bookmark/new": {
             "post": {
                 "description": "새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -41,29 +44,37 @@ const docTemplate = `{
                 "summary": "북마크를 DB에 추가하는 API",
                 "parameters": [
                     {
-                        "type": "integer",
                         "description": "User ID",
                         "name": "userId",
-                        "in": "query"
+                        "in": "body",
+                        "schema": {
+                            "type": "integer"
+                        }
                     },
                     {
-                        "type": "string",
                         "description": "Title",
                         "name": "title",
-                        "in": "query"
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     {
-                        "type": "string",
                         "description": "Link(URL)",
                         "name": "link",
-                        "in": "query",
-                        "required": true
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     {
-                        "type": "string",
                         "description": "keywords",
                         "name": "keywords",
-                        "in": "query"
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
