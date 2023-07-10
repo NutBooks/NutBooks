@@ -9,6 +9,16 @@ definitions:
       user_id:
         type: integer
     type: object
+  controllers.GetAllBookmarksJSONResult:
+    properties:
+      data:
+        items: {}
+        type: array
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
   controllers.GetBookmarkByIdJSONResult:
     properties:
       data: {}
@@ -28,6 +38,29 @@ paths:
       summary: Root URL - for health check
       tags:
       - /
+  /api/v1/bookmark:
+    get:
+      parameters:
+      - description: limit과 offset은 같이 입력해야 합니다
+        in: query
+        name: offset
+        type: integer
+      - description: limit과 offset은 같이 입력해야 합니다
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetAllBookmarksJSONResult'
+        "400":
+          description: Bad Request
+      summary: offset부터 limit까지 북마크 목록을 반환
+      tags:
+      - bookmark
   /api/v1/bookmark/{id}:
     get:
       parameters:

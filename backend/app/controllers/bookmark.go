@@ -3,6 +3,7 @@ package controllers
 import (
 	conn "api/db"
 	"api/db/models"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"log"
@@ -120,6 +121,79 @@ func GetBookmarkById(c *fiber.Ctx) error {
 
 	if result.Error == gorm.ErrRecordNotFound {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error":   true,
+			"message": result.Error.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"message": "Success",
+		"data":    found,
+	})
+}
+
+type GetAllBookmarksQueryParams struct {
+	Offset int
+	Limit  int
+}
+
+type GetAllBookmarksJSONResult struct {
+	Error   bool          `json:"error"`
+	Message string        `json:"message"`
+	Data    []interface{} `json:"data"`
+}
+
+// GetAllBookmarks
+//
+//	@Summary	offset부터 limit까지 북마크 목록을 반환
+//	@Tags		bookmark
+//
+//	@Produce	json
+//	@Param		offset	query		int	false	"limit과 offset은 같이 입력해야 합니다"
+//	@Param		limit	query		int	false	"limit과 offset은 같이 입력해야 합니다"
+//	@Success	200		{object}	GetAllBookmarksJSONResult
+//	@Failure	400
+//	@BasePath	/api/v1
+//	@Router		/api/v1/bookmark [get]
+func GetAllBookmarks(c *fiber.Ctx) error {
+
+	param := GetAllBookmarksQueryParams{}
+
+	err := c.QueryParser(&param)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	log.Println("param: ", param)
+
+	if (param.Limit > 0 && param.Offset == 0) || (param.Limit == 0 && param.Offset > 0) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": fmt.Sprintf("limit, offset은 같이 설정되어야 하고, 0 이상 정수를 입력해주세요."),
+		})
+	}
+
+	db, err := conn.GetDB()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	var found []models.Bookmark
+	var result *gorm.DB
+	if param.Limit == 0 && param.Offset == 0 {
+		result = db.Find(&found)
+	} else {
+		result = db.Limit(param.Limit).Offset(param.Offset).Find(&found)
+	}
+	if result == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   true,
 			"message": result.Error.Error(),
 		})

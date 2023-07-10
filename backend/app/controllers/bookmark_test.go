@@ -109,3 +109,60 @@ func TestGetBookmarkById(t *testing.T) {
 		}
 	}
 }
+
+func TestGetAllBookmarks(t *testing.T) {
+	config := configs.FiberConfig()
+	app := fiber.New(config)
+	route := app.Group("/api/v1")
+	route.Get("/bookmark/", GetAllBookmarks)
+
+	t.Helper()
+
+	testCases := []GetAllBookmarksQueryParams{
+		// case 0: get all bookmark
+		{},
+		// case 1: get bookmarks using limit and offset
+		{
+			Offset: 2,
+			Limit:  2,
+		},
+		// case 2: no offset -> error
+		{
+			Limit: 2,
+		},
+	}
+
+	for i, tt := range testCases {
+		t.Log("Case #", i, ": ", tt)
+
+		req := httptest.NewRequest(
+			"GET",
+			fmt.Sprintf("/api/v1/bookmark?offset=%d&limit=%d", tt.Offset, tt.Limit),
+			nil,
+		)
+
+		t.Log("req: ", req)
+
+		resp, err := app.Test(req, -1)
+		t.Log("resp: ", resp)
+		t.Log("err: ", err)
+		if i == 1 {
+			var result GetAllBookmarksJSONResult
+			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+				t.Log("err while parsing response:")
+			}
+			assert.Equal(t, 2, len(result.Data))
+			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		} else if i == 2 {
+			var result GetAllBookmarksJSONResult
+			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+				t.Log("err while parsing response:")
+			}
+			assert.Equal(t, "limit, offset은 같이 설정되어야 하고, 0 이상 정수를 입력해주세요.", result.Message)
+			assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
+		} else {
+			assert.NoError(t, err)
+			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		}
+	}
+}
