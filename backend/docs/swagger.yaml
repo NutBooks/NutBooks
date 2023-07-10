@@ -9,6 +9,14 @@ definitions:
       user_id:
         type: integer
     type: object
+  controllers.GetBookmarkByIdJSONResult:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -20,6 +28,26 @@ paths:
       summary: Root URL - for health check
       tags:
       - /
+  /api/v1/bookmark/{id}:
+    get:
+      parameters:
+      - description: Bookmark ID
+        in: path
+        name: bookmark_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetBookmarkByIdJSONResult'
+        "400":
+          description: Bad Request
+      summary: ID를 사용해 북마크 1개 정보 읽기
+      tags:
+      - bookmark
   /api/v1/bookmark/new:
     post:
       consumes:

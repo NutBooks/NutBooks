@@ -5,8 +5,10 @@ import (
 	"api/db/models"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 	"net/http/httptest"
 	"testing"
 )
@@ -60,6 +62,49 @@ func TestAddBookmark(t *testing.T) {
 		if i == 2 {
 			assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
 		} else {
+			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		}
+	}
+}
+
+func TestGetBookmarkById(t *testing.T) {
+	config := configs.FiberConfig()
+	app := fiber.New(config)
+	route := app.Group("/api/v1")
+	route.Get("/bookmark/:id", GetBookmarkById)
+
+	t.Helper()
+
+	testCases := []string{
+		// case 0: get bookmark which index is 1. success
+		"1",
+		// case 1: get bookmark which index is 0, fail
+		"0",
+	}
+
+	for i, tt := range testCases {
+		t.Log("Case #", i, ": ", tt)
+
+		req := httptest.NewRequest(
+			"GET",
+			fmt.Sprintf("/api/v1/bookmark/%s", tt),
+			nil,
+		)
+
+		t.Log("req: ", req)
+
+		resp, err := app.Test(req, -1)
+		t.Log("resp: ", resp)
+		t.Log("err: ", err)
+		if i == 1 {
+			var result GetBookmarkByIdJSONResult
+			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+				t.Log("err while parsing response:")
+			}
+			assert.Equal(t, gorm.ErrRecordNotFound.Error(), result.Message)
+			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		} else {
+			assert.NoError(t, err)
 			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 		}
 	}

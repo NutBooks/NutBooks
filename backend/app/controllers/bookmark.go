@@ -4,6 +4,7 @@ import (
 	conn "api/db"
 	"api/db/models"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 	"log"
 )
 
@@ -67,5 +68,66 @@ func AddBookmark(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"error":   false,
 		"message": "Success",
+	})
+}
+
+type GetBookmarkByIdJSONResult struct {
+	Error   bool        `json:"error"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
+// GetBookmarkById
+//
+//	@Summary	ID를 사용해 북마크 1개 정보 읽기
+//	@Tags		bookmark
+//	@Produce	json
+//	@Param		bookmark_id	path		uint	true	"Bookmark ID"
+//	@Success	200			{object}	GetBookmarkByIdJSONResult
+//	@Failure	400
+//	@BasePath	/api/v1
+//	@Router		/api/v1/bookmark/{id} [get]
+func GetBookmarkById(c *fiber.Ctx) error {
+
+	param := models.Bookmark{}
+
+	err := c.ParamsParser(&param)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	log.Println("bookmark_id: ", param.ID)
+
+	db, err := conn.GetDB()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": err.Error(),
+		})
+	}
+
+	var found models.Bookmark
+	result := db.First(&found, param.ID)
+	if result == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": result.Error.Error(),
+		})
+	}
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"error":   true,
+			"message": result.Error.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"error":   false,
+		"message": "Success",
+		"data":    found,
 	})
 }
