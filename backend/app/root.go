@@ -49,7 +49,12 @@ func RunServer() {
 	// Graceful shutdown
 	// https://github.com/gofiber/recipes/tree/master/graceful-shutdown
 	go func() {
-		if err := app.Listen(":3000"); err != nil {
+		port, exists := os.LookupEnv("API_PORT")
+		if !exists {
+			log.Println("No API_PORT environment variable. Use default value.")
+			port = "8081"
+		}
+		if err := app.Listen(":" + port); err != nil {
 			log.Panic(err)
 		}
 	}()
