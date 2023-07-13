@@ -1,3 +1,32 @@
+definitions:
+  controllers.AddBookmarkJsonRequest:
+    properties:
+      link:
+        example: https://cheesecat47.github.io
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  controllers.GetAllBookmarksJSONResult:
+    properties:
+      data:
+        items: {}
+        type: array
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  controllers.GetBookmarkByIdJSONResult:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -8,5 +37,70 @@ paths:
           description: OK
       summary: Root URL - for health check
       tags:
-      - /api/v1
+      - /
+  /api/v1/bookmark:
+    get:
+      parameters:
+      - description: limit과 offset은 같이 입력해야 합니다
+        in: query
+        name: offset
+        type: integer
+      - description: limit과 offset은 같이 입력해야 합니다
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetAllBookmarksJSONResult'
+        "400":
+          description: Bad Request
+      summary: offset부터 limit까지 북마크 목록을 반환
+      tags:
+      - bookmark
+  /api/v1/bookmark/{id}:
+    get:
+      parameters:
+      - description: Bookmark ID
+        in: path
+        name: bookmark_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetBookmarkByIdJSONResult'
+        "400":
+          description: Bad Request
+      summary: ID를 사용해 북마크 1개 정보 읽기
+      tags:
+      - bookmark
+  /api/v1/bookmark/new:
+    post:
+      consumes:
+      - application/json
+      description: 새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
+      parameters:
+      - description: body params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AddBookmarkJsonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: 북마크를 DB에 추가하는 API
+      tags:
+      - bookmark
 swagger: "2.0"
