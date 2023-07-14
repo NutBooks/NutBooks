@@ -5,12 +5,32 @@ import (
 )
 
 // User has many bookmarks
+// https://rastalion.me/회원-가입-및-로그인을-위한-테이블-설계/
 // https://gorm.io/docs/has_many.html
 type User struct {
 	gorm.Model
-	GitHubID    string `gorm:"not null;unique;"`
-	Password    string `gorm:"not null;"`
-	Name        string `gorm:"not null;"`
-	AccessToken string
-	//Bookmarks   []Bookmark `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Name      string `gorm:"not null;"`
+	Authority string `gorm:"not null;"`
 }
+
+type Profile struct {
+	gorm.Model
+	UserID   uint `gorm:"not null;unique;"`
+	Nickname string
+	ImageURL string
+}
+
+type Authority struct {
+	gorm.Model
+	UserID    uint   `gorm:"not null;unique;"`
+	Authority string `gorm:"not null;"`
+}
+
+type Authentication struct {
+	UserID uint   `gorm:"not null;unique;"`
+	Email  string `gorm:"not null;unique;"`
+}
+
+//type Subscription struct {
+//
+//}
