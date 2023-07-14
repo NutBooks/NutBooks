@@ -38,8 +38,8 @@ func RunServer() {
 
 	// limit 3 requests per 10 seconds max
 	app.Use(limiter.New(limiter.Config{
-		Expiration: 10 * time.Second,
-		Max:        10,
+		Expiration: 1 * time.Hour,
+		Max:        1000,
 	}))
 
 	// https://github.com/swaggo/swag#declarative-comments-format
