@@ -27,6 +27,49 @@ definitions:
       message:
         type: string
     type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.AddUserRequest:
+    properties:
+      email:
+        example: ""
+        type: string
+      name:
+        example: ""
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  models.AddUserResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.User:
+    properties:
+      Authority:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -103,4 +146,36 @@ paths:
       summary: 북마크를 DB에 추가하는 API
       tags:
       - bookmark
+  /api/v1/user/:
+    post:
+      parameters:
+      - description: body params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.AddUserResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.AddUserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.AddUserResponse'
+      summary: 새 유저를 추가하는 API
+      tags:
+      - user
 swagger: "2.0"

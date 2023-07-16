@@ -16,6 +16,10 @@ func PublicRoutes(app *fiber.App) {
 	route.Post("/bookmark/new", controllers.AddBookmark)
 	route.Get("/bookmark/:id", controllers.GetBookmarkById)
 	route.Get("/bookmark/", controllers.GetAllBookmarks)
+
+	// User
+	user := route.Group("/user")
+	user.Post("/", controllers.AddUser)
 }
 
 // Root func
