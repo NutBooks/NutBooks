@@ -1,22 +1,34 @@
 package routes
 
 import (
+	"api/app/controllers"
 	"github.com/gofiber/fiber/v2"
 )
 
 func PublicRoutes(app *fiber.App) {
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Redirect("/api/v1/")
+	})
+
 	route := app.Group("/api/v1")
 
-	route.Get("/", root)
+	route.Get("/", Root)
+	route.Post("/bookmark/new", controllers.AddBookmark)
+	route.Get("/bookmark/:id", controllers.GetBookmarkById)
+	route.Get("/bookmark/", controllers.GetAllBookmarks)
+
+	// User
+	user := route.Group("/user")
+	user.Post("/", controllers.AddUser)
 }
 
-// root func
+// Root func
 //
 //	@Summary	Root URL - for health check
 //	@Success	200
-//	@Tags		/api/v1
+//	@Tags		/
 //	@BasePath	/api/v1
 //	@Router		/api/v1/ [get]
-func root(c *fiber.Ctx) error {
+func Root(c *fiber.Ctx) error {
 	return c.SendString("Hi")
 }

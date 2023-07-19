@@ -7,13 +7,276 @@
         "/api/v1/": {
             "get": {
                 "tags": [
-                    "/api/v1"
+                    "/"
                 ],
                 "summary": "Root URL - for health check",
                 "responses": {
                     "200": {
                         "description": "OK"
                     }
+                }
+            }
+        },
+        "/api/v1/bookmark": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookmark"
+                ],
+                "summary": "offset부터 limit까지 북마크 목록을 반환",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit과 offset은 같이 입력해야 합니다",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit과 offset은 같이 입력해야 합니다",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetAllBookmarksJSONResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/v1/bookmark/new": {
+            "post": {
+                "description": "새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookmark"
+                ],
+                "summary": "북마크를 DB에 추가하는 API",
+                "parameters": [
+                    {
+                        "description": "body params",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.AddBookmarkJsonRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/v1/bookmark/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookmark"
+                ],
+                "summary": "ID를 사용해 북마크 1개 정보 읽기",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Bookmark ID",
+                        "name": "bookmark_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetBookmarkByIdJSONResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/v1/user/": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "새 유저를 추가하는 API",
+                "parameters": [
+                    {
+                        "description": "body params",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.AddUserResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers.AddBookmarkJsonRequest": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "type": "string",
+                    "example": "https://cheesecat47.github.io"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controllers.GetAllBookmarksJSONResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {}
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.GetBookmarkByIdJSONResult": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.AddUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": ""
+                },
+                "name": {
+                    "type": "string",
+                    "example": ""
+                }
+            }
+        },
+        "models.AddUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "Authority": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         }

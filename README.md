@@ -2,6 +2,8 @@
 
 저장하고 쌓여만 가던 북마크를 자동으로 요약, 정리해주는 서비스입니다.
 
+[![Backend - API server tests](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/NutBooks/NutBooks/actions/workflows/go.yml)
+
 ---
 
 - [Run Locally](#run-locally)
