@@ -5,6 +5,7 @@ import (
 	"api/db/models"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -114,6 +115,66 @@ func TestAddUser(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := models.AddUserResponse{}
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			t.Error("Error while parsing response: ", err)
+			t.Fail()
+		}
+
+		assert.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+	}
+}
+
+func TestGetUserById(t *testing.T) {
+	config := configs.FiberConfig()
+	app := fiber.New(config)
+	route := app.Group("/api/v1")
+
+	// User
+	user := route.Group("/user")
+	user.Get("/:id", GetUserById)
+
+	t.Helper()
+
+	testCases := []struct {
+		description   string
+		method        string
+		route         string
+		body          models.GetUserByIdRequest
+		expectedError bool
+		expectedCode  int
+		expectedBody  string
+	}{
+		{
+			description: "Get user",
+			method:      "GET",
+			route:       "/api/v1/user/",
+			body: models.GetUserByIdRequest{
+				ID: 1,
+			},
+			expectedError: false,
+			expectedCode:  http.StatusOK,
+		},
+	}
+
+	for i, tt := range testCases {
+		t.Log("Case #", i, ": ", tt)
+
+		var buf bytes.Buffer
+		if err := json.NewEncoder(&buf).Encode(tt.body); err != nil {
+			t.Error("Case #", i, ": Failed to convert test case to body param, ", err)
+			t.Fail()
+		}
+
+		req := httptest.NewRequest(tt.method, fmt.Sprintf("%s%d", tt.route, tt.body.ID), &buf)
+		req.Header.Set("Content-Type", "application/json")
+
+		t.Log("Case #", i, " req: ", req)
+
+		resp, err := app.Test(req, -1)
+		t.Log("Case #", i, " resp: ", resp)
+		assert.NoError(t, err)
+
+		result := models.GetUserByIdResponse{}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 			t.Error("Error while parsing response: ", err)
 			t.Fail()

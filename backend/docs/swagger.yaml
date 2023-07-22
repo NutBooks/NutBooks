@@ -55,6 +55,14 @@ definitions:
       message:
         type: string
     type: object
+  models.GetUserByIdResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
   models.User:
     properties:
       Authority:
@@ -176,6 +184,33 @@ paths:
           schema:
             $ref: '#/definitions/models.AddUserResponse'
       summary: 새 유저를 추가하는 API
+      tags:
+      - user
+  /api/v1/user/{id}:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.GetUserByIdResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetUserByIdResponse'
+      summary: UserID를 사용해 유저 1명 정보 읽기
       tags:
       - user
 swagger: "2.0"

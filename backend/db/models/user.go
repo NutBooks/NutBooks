@@ -45,6 +45,16 @@ type AddUserResponse struct {
 	Message string      `json:"message"`
 }
 
+type GetUserByIdRequest struct {
+	ID int `validate:"required" json:"id"`
+}
+
+type GetUserByIdResponse struct {
+	Error   bool        `json:"error"`
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
+}
+
 const (
 	AuthorityNone  string = "None"
 	AuthorityAdmin string = "Admin"

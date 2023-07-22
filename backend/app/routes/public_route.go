@@ -20,6 +20,7 @@ func PublicRoutes(app *fiber.App) {
 	// User
 	user := route.Group("/user")
 	user.Post("/", controllers.AddUser)
+	user.Get("/:id", controllers.GetUserById)
 }
 
 // Root func

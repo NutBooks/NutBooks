@@ -6,6 +6,7 @@ import (
 	"api/db/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 var validate = validator.New()
@@ -99,4 +100,60 @@ func AddUser(c *fiber.Ctx) error {
 		Message: "Success",
 		Data:    user,
 	})
+}
+
+// GetUserById
+//
+//	@Summary	UserID를 사용해 유저 1명 정보 읽기
+//	@Tags		user
+//	@Produce	json
+//	@Param		id	path		uint	true	"User ID"
+//	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
+//	@Failure	400	{object}	models.GetUserByIdResponse{}
+//	@BasePath	/api/v1
+//	@Router		/api/v1/user/{id} [get]
+func GetUserById(c *fiber.Ctx) error {
+	param := models.GetUserByIdRequest{}
+
+	if err := c.ParamsParser(&param); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	db, err := conn.GetDB()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	var found models.User
+	result := db.First(&found, param.ID)
+	if result == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if result.Error == gorm.ErrRecordNotFound {
+		return c.Status(fiber.StatusOK).JSON(models.GetUserByIdResponse{
+			Error:   true,
+			Message: result.Error.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.GetUserByIdResponse{
+		Error:   false,
+		Message: "Success",
+		Data:    found,
+	})
+
 }
