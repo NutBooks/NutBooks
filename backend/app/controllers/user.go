@@ -40,7 +40,8 @@ func ValidateAddUserRequestParams(p models.AddUserRequest) []*utils.ErrorRespons
 func AddUser(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 
-	if err := c.BodyParser(params); err != nil {
+	err := c.BodyParser(params)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -73,7 +74,7 @@ func AddUser(c *fiber.Ctx) error {
 		})
 	}
 
-	user := models.User{
+	user := &models.User{
 		Name:      params.Name,
 		Authority: models.AuthorityNone,
 	}
@@ -87,7 +88,16 @@ func AddUser(c *fiber.Ctx) error {
 		})
 	}
 
-	if err = db.Create(&user).Error; err != nil {
+	result := db.Create(user)
+	if result == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -110,12 +120,14 @@ func AddUser(c *fiber.Ctx) error {
 //	@Param		id	path		uint	true	"User ID"
 //	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
 //	@Failure	400	{object}	models.GetUserByIdResponse{}
+//	@Failure	500	{object}	models.AddUserResponse{}
 //	@BasePath	/api/v1
 //	@Router		/api/v1/user/{id} [get]
 func GetUserById(c *fiber.Ctx) error {
-	param := models.GetUserByIdRequest{}
+	param := &models.GetUserByIdRequest{}
 
-	if err := c.ParamsParser(&param); err != nil {
+	err := c.ParamsParser(param)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -155,5 +167,4 @@ func GetUserById(c *fiber.Ctx) error {
 		Message: "Success",
 		Data:    found,
 	})
-
 }

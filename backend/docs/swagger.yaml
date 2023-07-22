@@ -210,6 +210,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetUserByIdResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.AddUserResponse'
       summary: UserID를 사용해 유저 1명 정보 읽기
       tags:
       - user

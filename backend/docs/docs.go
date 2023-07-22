@@ -226,6 +226,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.GetUserByIdResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserResponse"
+                        }
                     }
                 }
             }
