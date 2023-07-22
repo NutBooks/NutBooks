@@ -35,7 +35,6 @@ func ValidateAddUserRequestParams(p models.AddUserRequest) []*utils.ErrorRespons
 //	@Success	200		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
-//	@BasePath	/api/v1
 //	@Router		/api/v1/user/ [post]
 func AddUser(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
@@ -121,7 +120,6 @@ func AddUser(c *fiber.Ctx) error {
 //	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
 //	@Failure	400	{object}	models.GetUserByIdResponse{}
 //	@Failure	500	{object}	models.AddUserResponse{}
-//	@BasePath	/api/v1
 //	@Router		/api/v1/user/{id} [get]
 func GetUserById(c *fiber.Ctx) error {
 	param := &models.GetUserByIdRequest{}

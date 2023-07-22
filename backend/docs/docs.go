@@ -65,7 +65,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookmark/new": {
+        "/api/v1/bookmark/": {
             "post": {
                 "description": "새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.",
                 "consumes": [
@@ -112,7 +112,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Bookmark ID",
-                        "name": "bookmark_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
