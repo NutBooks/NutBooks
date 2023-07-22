@@ -4,27 +4,9 @@ import (
 	"api/app/utils"
 	conn "api/db"
 	"api/db/models"
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
-
-var validate = validator.New()
-
-func ValidateAddUserRequestParams(p models.AddUserRequest) []*utils.ErrorResponse {
-	var errors []*utils.ErrorResponse
-	err := validate.Struct(p)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var e utils.ErrorResponse
-			e.FailedField = err.StructNamespace()
-			e.Tag = err.Tag()
-			e.Value = err.Param()
-			errors = append(errors, &e)
-		}
-	}
-	return errors
-}
 
 // AddUser
 //
@@ -48,28 +30,13 @@ func AddUser(c *fiber.Ctx) error {
 		})
 	}
 
-	if params.Name == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: "Name is required",
-			Data:    nil,
-		})
-	}
-
-	if params.Email == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: "Email is required",
-			Data:    nil,
-		})
-	}
-
-	validateErr := ValidateAddUserRequestParams(*params)
-	if validateErr != nil {
+	addUserValidator := &utils.AddUserRequestValidator{}
+	validateErrs := addUserValidator.Validate(params)
+	if validateErrs != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: "Wrong email format",
-			Data:    nil,
+			Data:    validateErrs,
 		})
 	}
 
