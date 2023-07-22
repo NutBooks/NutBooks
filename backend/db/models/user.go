@@ -5,55 +5,61 @@ import "gorm.io/gorm"
 // User has many bookmarks
 // https://rastalion.me/회원-가입-및-로그인을-위한-테이블-설계/
 // https://gorm.io/docs/has_many.html
-type User struct {
-	gorm.Model `gorm:"serializer:json"`
-	Name       string `gorm:"not null;" json:"name"`
-	Authority  string `gorm:"not null;" json:"Authority"`
-}
+type (
+	User struct {
+		gorm.Model `gorm:"serializer:json"`
+		Name       string `gorm:"not null;" json:"name"`
+		Authority  string `gorm:"not null;" json:"Authority"`
+	}
 
-type Profile struct {
-	gorm.Model `gorm:"serializer:json"`
-	UserID     uint `gorm:"not null;unique;"`
-	Nickname   string
-	ImageURL   string
-}
+	Profile struct {
+		gorm.Model `gorm:"serializer:json"`
+		UserID     uint `gorm:"not null;unique;"`
+		Nickname   string
+		ImageURL   string
+	}
 
-type Authority struct {
-	gorm.Model `gorm:"serializer:json"`
-	UserID     uint   `gorm:"not null;unique;"`
-	Authority  string `gorm:"not null;"`
-}
+	Authority struct {
+		gorm.Model `gorm:"serializer:json"`
+		UserID     uint   `gorm:"not null;unique;"`
+		Authority  string `gorm:"not null;"`
+	}
 
-type Authentication struct {
-	gorm.Model `gorm:"serializer:json"`
-	UserID     uint   `gorm:"not null;unique;"`
-	Email      string `gorm:"not null;unique;" json:"email"`
-}
+	Authentication struct {
+		gorm.Model `gorm:"serializer:json"`
+		UserID     uint   `gorm:"not null;unique;"`
+		Email      string `gorm:"not null;unique;" json:"email"`
+	}
 
-//type Subscription struct {
-//
-//}
+	//Subscription struct {
+	//
+	//}
+)
 
-type AddUserRequest struct {
-	Name  string `validate:"required" json:"name" example:""`
-	Email string `validate:"required,email" json:"email" example:""`
-}
+type (
+	AddUserRequest struct {
+		Name  string `validate:"required" json:"name" example:""`
+		Email string `validate:"required,email" json:"email" example:""`
+	}
 
-type AddUserResponse struct {
-	Error   bool        `json:"error"`
-	Data    interface{} `json:"data"`
-	Message string      `json:"message"`
-}
+	AddUserResponse struct {
+		Error   bool        `json:"error"`
+		Data    interface{} `json:"data"`
+		Message string      `json:"message"`
+	}
+)
 
-type GetUserByIdRequest struct {
-	ID int `validate:"required" json:"id"`
-}
+type (
+	GetUserByIdRequest struct {
+		ID int `validate:"required" json:"id"`
+	}
 
-type GetUserByIdResponse struct {
-	Error   bool        `json:"error"`
-	Data    interface{} `json:"data"`
-	Message string      `json:"message"`
-}
+	GetUserByIdResponse struct {
+		Error   bool        `json:"error"`
+		Data    interface{} `json:"data"`
+		Message string      `json:"message"`
+	}
+)
 
 const (
 	AuthorityNone  string = "None"
