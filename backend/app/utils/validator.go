@@ -13,12 +13,12 @@ type (
 		Value       interface{}
 	}
 
-	AddUserRequestValidator struct {
+	Validator struct {
 		validator *validator.Validate
 	}
 )
 
-func (v AddUserRequestValidator) Validate(data interface{}) []errorResponse {
+func (v Validator) Validate(data interface{}) []errorResponse {
 	v.validator = validate
 
 	var validationErrors []errorResponse

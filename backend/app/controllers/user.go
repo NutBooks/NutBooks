@@ -30,12 +30,12 @@ func AddUser(c *fiber.Ctx) error {
 		})
 	}
 
-	addUserValidator := &utils.AddUserRequestValidator{}
-	validateErrs := addUserValidator.Validate(params)
+	validator := &utils.Validator{}
+	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
 			Error:   true,
-			Message: "Wrong email format",
+			Message: "Validation failed",
 			Data:    validateErrs,
 		})
 	}
@@ -89,14 +89,24 @@ func AddUser(c *fiber.Ctx) error {
 //	@Failure	500	{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user/{id} [get]
 func GetUserById(c *fiber.Ctx) error {
-	param := &models.GetUserByIdRequest{}
+	params := &models.GetUserByIdRequest{}
 
-	err := c.ParamsParser(param)
+	err := c.ParamsParser(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
 			Error:   true,
 			Message: err.Error(),
 			Data:    nil,
+		})
+	}
+
+	validator := &utils.Validator{}
+	validateErrs := validator.Validate(params)
+	if validateErrs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
+			Error:   true,
+			Message: "Validation failed",
+			Data:    validateErrs,
 		})
 	}
 
@@ -109,8 +119,8 @@ func GetUserById(c *fiber.Ctx) error {
 		})
 	}
 
-	var found models.User
-	result := db.First(&found, param.ID)
+	found := &models.User{}
+	result := db.First(found, params.ID)
 	if result == nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
 			Error:   true,

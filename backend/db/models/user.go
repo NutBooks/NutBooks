@@ -51,7 +51,7 @@ type (
 
 type (
 	GetUserByIdRequest struct {
-		ID int `validate:"required" json:"id"`
+		ID int `validate:"required,number,min=1" json:"id"`
 	}
 
 	GetUserByIdResponse struct {

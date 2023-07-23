@@ -301,10 +301,14 @@ const docTemplate = `{
             "properties": {
                 "email": {
                     "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5,
                     "example": ""
                 },
                 "name": {
                     "type": "string",
+                    "maxLength": 20,
+                    "minLength": 1,
                     "example": ""
                 }
             }

@@ -39,9 +39,13 @@ definitions:
     properties:
       email:
         example: ""
+        maxLength: 20
+        minLength: 5
         type: string
       name:
         example: ""
+        maxLength: 20
+        minLength: 1
         type: string
     required:
     - email
