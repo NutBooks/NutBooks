@@ -2,6 +2,7 @@ package routes
 
 import (
 	"api/app/controllers"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -25,6 +26,7 @@ func PublicRoutes(app *fiber.App) {
 	user := v1.Group("/user")
 	user.Post("/", controllers.AddUser)
 	user.Get("/:id", controllers.GetUserById)
+	user.Get("/", controllers.GetAllUsers)
 }
 
 // Root func

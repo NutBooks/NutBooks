@@ -59,6 +59,17 @@ type (
 		Data    interface{} `json:"data"`
 		Message string      `json:"message"`
 	}
+
+	GetAllUsersRequest struct {
+		Offset int `validate:"number,min=0" json:"offset"`
+		Limit  int `validate:"number,min=0" json:"limit"`
+	}
+
+	GetAllUsersResponse struct {
+		Error   bool        `json:"error"`
+		Data    interface{} `json:"data"`
+		Message string      `json:"message"`
+	}
 )
 
 const (

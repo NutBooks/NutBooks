@@ -59,6 +59,14 @@ definitions:
       message:
         type: string
     type: object
+  models.GetAllUsersResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
   models.GetUserByIdResponse:
     properties:
       data: {}
@@ -159,6 +167,41 @@ paths:
       tags:
       - bookmark
   /api/v1/user/:
+    get:
+      parameters:
+      - description: limit과 offset은 같이 입력해야 합니다.
+        in: query
+        name: offset
+        type: integer
+      - description: limit과 offset은 같이 입력해야 합니다.
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.GetAllUsersResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.User'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetAllUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.GetAllUsersResponse'
+      summary: 모든 유저 목록 반환
+      tags:
+      - user
     post:
       parameters:
       - description: body params
