@@ -22,18 +22,9 @@ import (
 	_ "api/docs"
 )
 
-// RunServer godoc
-//
-//	@title			NutBooks API
-//	@version		1.0.0
-//	@contact.email	cheesecat47@gmail.com
-//	@licence.name	MIT
-func RunServer() {
-
+func Setup() *fiber.App {
 	config := configs.FiberConfig()
-
 	app := fiber.New(config)
-
 	middlewares.FiberMiddleware(app)
 
 	// limit 3 requests per 10 seconds max
@@ -45,6 +36,20 @@ func RunServer() {
 	// https://github.com/swaggo/swag#declarative-comments-format
 	routes.SwaggerRoute(app)
 	routes.PublicRoutes(app)
+	return app
+}
+
+// RunServer godoc
+//
+//	@title			NutBooks API
+//	@version		1.0.0
+//	@contact.email	cheesecat47@gmail.com
+//	@licence.name	MIT
+func RunServer() {
+	app := Setup()
+	if app == nil {
+		log.Panicf("Cannot create app")
+	}
 
 	// Graceful shutdown
 	// https://github.com/gofiber/recipes/tree/master/graceful-shutdown

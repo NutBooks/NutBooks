@@ -25,8 +25,7 @@ type AddBookmarkJsonRequest struct {
 //	@Param			request	body	AddBookmarkJsonRequest	true	"body params"
 //	@Success		200
 //	@Failure		400
-//	@BasePath		/api/v1
-//	@Router			/api/v1/bookmark/new [post]
+//	@Router			/api/v1/bookmark/ [post]
 func AddBookmark(c *fiber.Ctx) error {
 	// Get claims from JWT
 	// Check user permissions to create a new bookmark
@@ -83,10 +82,9 @@ type GetBookmarkByIdJSONResult struct {
 //	@Summary	ID를 사용해 북마크 1개 정보 읽기
 //	@Tags		bookmark
 //	@Produce	json
-//	@Param		bookmark_id	path		uint	true	"Bookmark ID"
-//	@Success	200			{object}	GetBookmarkByIdJSONResult
+//	@Param		id	path		uint	true	"Bookmark ID"
+//	@Success	200	{object}	GetBookmarkByIdJSONResult
 //	@Failure	400
-//	@BasePath	/api/v1
 //	@Router		/api/v1/bookmark/{id} [get]
 func GetBookmarkById(c *fiber.Ctx) error {
 
@@ -154,7 +152,6 @@ type GetAllBookmarksJSONResult struct {
 //	@Param		limit	query		int	false	"limit과 offset은 같이 입력해야 합니다"
 //	@Success	200		{object}	GetAllBookmarksJSONResult
 //	@Failure	400
-//	@BasePath	/api/v1
 //	@Router		/api/v1/bookmark [get]
 func GetAllBookmarks(c *fiber.Ctx) error {
 

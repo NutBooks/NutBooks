@@ -65,7 +65,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookmark/new": {
+        "/api/v1/bookmark/": {
             "post": {
                 "description": "새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.",
                 "consumes": [
@@ -112,7 +112,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Bookmark ID",
-                        "name": "bookmark_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -173,6 +173,58 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/models.AddUserResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "UserID를 사용해 유저 1명 정보 읽기",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.GetUserByIdResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetUserByIdResponse"
                         }
                     },
                     "500": {
@@ -249,15 +301,31 @@ const docTemplate = `{
             "properties": {
                 "email": {
                     "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5,
                     "example": ""
                 },
                 "name": {
                     "type": "string",
+                    "maxLength": 20,
+                    "minLength": 1,
                     "example": ""
                 }
             }
         },
         "models.AddUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetUserByIdResponse": {
             "type": "object",
             "properties": {
                 "data": {},
