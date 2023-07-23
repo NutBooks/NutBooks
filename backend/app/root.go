@@ -11,19 +11,24 @@ import (
 	"api/app/middlewares"
 	"api/app/routes"
 	"api/configs"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"api/db"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+
 	_ "api/docs"
 )
 
 func Setup() *fiber.App {
 	config := configs.FiberConfig()
+
+	db.MigrateMysql()
+
 	app := fiber.New(config)
 	middlewares.FiberMiddleware(app)
 
