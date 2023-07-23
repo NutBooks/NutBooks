@@ -38,8 +38,8 @@ type (
 
 type (
 	AddUserRequest struct {
-		Name  string `validate:"required,min=1,max=20" json:"name" example:""`
-		Email string `validate:"required,min=5,max=20,email" json:"email" example:""`
+		Name  string `validate:"required,min=1,max=50" json:"name" example:""`
+		Email string `validate:"required,min=5,max=50,email" json:"email" example:""`
 	}
 
 	AddUserResponse struct {

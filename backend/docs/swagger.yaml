@@ -39,12 +39,12 @@ definitions:
     properties:
       email:
         example: ""
-        maxLength: 20
+        maxLength: 50
         minLength: 5
         type: string
       name:
         example: ""
-        maxLength: 20
+        maxLength: 50
         minLength: 1
         type: string
     required:

@@ -7,21 +7,19 @@ RUN apk update
 
 WORKDIR /build
 
-COPY go.mod .
-COPY go.sum .
-
-RUN go mod tidy
-
 ENV GO111MODULE=on \
     CGO_ENABLE=0 \
     GOOS=linux
 
-COPY . .
+COPY go.mod .
+COPY go.sum .
+RUN go mod tidy
 
-RUN go build -a -ldflags="-s -w" -o bin/main .
+COPY . .
+RUN go clean -cache && go build -o bin/main .
 
 FROM alpine:3.18
 
 COPY --from=builder /build/bin/main /main
 
-ENTRYPOINT ["/main"]
+ENTRYPOINT ["/main", "run"]
