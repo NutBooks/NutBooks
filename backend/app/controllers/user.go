@@ -4,6 +4,7 @@ import (
 	"api/app/utils"
 	conn "api/db"
 	"api/db/models"
+
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -138,6 +139,71 @@ func GetUserById(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(models.GetUserByIdResponse{
+		Error:   false,
+		Message: "Success",
+		Data:    found,
+	})
+}
+
+// GetAllUsers
+//
+//	@Summary	모든 유저 목록 반환
+//	@Tags		user
+//	@Produce	json
+//	@Param		offset	query		int	false	"limit과 offset은 같이 입력해야 합니다."
+//	@Param		limit	query		int	false	"limit과 offset은 같이 입력해야 합니다."
+//	@Success	200		{object}	models.GetAllUsersResponse{data=[]models.User{}}
+//	@Failure	400		{object}	models.GetAllUsersResponse{}
+//
+//	@Failure	500		{object}	models.GetAllUsersResponse{}
+//	@Router		/api/v1/user/ [get]
+func GetAllUsers(c *fiber.Ctx) error {
+	params := &models.GetAllUsersRequest{}
+	err := c.QueryParser(params)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	validator := &utils.Validator{}
+	validateErrs := validator.Validate(params)
+	if validateErrs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+			Error:   true,
+			Message: "Validation failed",
+			Data:    validateErrs,
+		})
+	}
+
+	db, err := conn.GetDB()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	var found []models.User
+	var result *gorm.DB
+	if params.Limit == 0 && params.Offset == 0 {
+		result = db.Find(&found)
+	} else {
+		result = db.Limit(params.Limit).Offset(params.Offset).Find(&found)
+	}
+
+	if result == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+			Error:   true,
+			Message: result.Error.Error(),
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.GetAllUsersResponse{
 		Error:   false,
 		Message: "Success",
 		Data:    found,

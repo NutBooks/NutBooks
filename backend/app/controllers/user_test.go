@@ -6,11 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddUser(t *testing.T) {
@@ -184,5 +185,71 @@ func TestGetUserById(t *testing.T) {
 		}
 
 		assert.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+	}
+}
+
+func TestGetAllUsers(t *testing.T) {
+	config := configs.FiberConfig()
+	app := fiber.New(config)
+	route := app.Group("/api/v1")
+
+	// User
+	user := route.Group("/user")
+	user.Get("/", GetAllUsers)
+
+	t.Helper()
+
+	testCases := []struct {
+		description   string
+		method        string
+		route         string
+		body          models.GetAllUsersRequest
+		expectedError bool
+		expectedCode  int
+		expectedBody  string
+	}{
+		{
+			description:   "Get all users",
+			method:        "GET",
+			route:         "/api/v1/user/",
+			body:          models.GetAllUsersRequest{},
+			expectedError: false,
+			expectedCode:  http.StatusOK,
+		},
+		{
+			description: "Get all users",
+			method:      "GET",
+			route:       "/api/v1/user/",
+			body: models.GetAllUsersRequest{
+				Offset: -1,
+			},
+			expectedError: true,
+			expectedCode:  http.StatusBadRequest,
+		},
+	}
+
+	for i, tt := range testCases {
+		t.Log("Case #", i, ": ", tt)
+
+		req := httptest.NewRequest(
+			"GET",
+			fmt.Sprintf("/api/v1/user/?offset=%d&limit=%d", tt.body.Offset, tt.body.Limit),
+			nil,
+		)
+
+		t.Log("Case #", i, ": req: ", req)
+		resp, err := app.Test(req, -1)
+		t.Log("Case #", i, ": resp: ", resp)
+		assert.NoError(t, err)
+
+		result := &models.GetAllUsersResponse{}
+		err = json.NewDecoder(resp.Body).Decode(result)
+		if err != nil {
+			t.Error("Error while parsing response: ", err)
+			t.Fail()
+		}
+
+		assert.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		assert.Equal(t, tt.expectedError, result.Error)
 	}
 }
