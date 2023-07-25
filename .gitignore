@@ -121,3 +121,5 @@ Temporary Items
 
 .env
 .env.*
+
+.cert/*.pem

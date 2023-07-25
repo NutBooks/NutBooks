@@ -8,18 +8,20 @@ services:
     image: traefik:v2.10
     restart: unless-stopped
     ports:
-      - 80:80
       - 443:443
       # - 8080:8080 # dashboard
-      # - ${MYSQL_PORT}:3306 # mysql
+      - ${MYSQL_PORT}:3306 # mysql
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./configs/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ../.cert/:/.cert:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.dashboard.rule=PathPrefix(`/api`, `/dashboard`)
       - traefik.http.routers.dashboard.service=api@internal
-      # - traefik.http.routers.traefik.rule=Host(`${AZURE_DDNS}`)
+      - certificatesresolvers.myresolver.acme.tlschallenge=true
+      - certificatesresolvers.myresolver.acme.email=cheesecat47@gmail.com
+      - certificatesresolvers.myresolver.acme.storage=/.cert/acme.json
 
   mysql:
     image: mysql:8
@@ -57,8 +59,11 @@ services:
       - /bin/bash
       - -c
       - |
-        /wait-for-it.sh -t 10 ${MYSQL_HOST}:${MYSQL_PORT} -- /main run
+        /wait-for-it.sh -t 10 mysql:3306 -- /main run
     labels:
       - traefik.enable=true
-      - traefik.http.routers.fiber.rule=PathPrefix(`/`)
+      - traefik.http.routers.fiber.tls=true
+      - traefik.http.routers.fiber.rule=Host(`${HOST}`)&&PathPrefix(`/`)
+      - traefik.http.routers.fiber.entryPoints=websecure
+      - traefik.http.routers.fiber.tls.certresolver=myresolver
       - traefik.http.services.fiber.loadbalancer.server.port=${API_PORT}

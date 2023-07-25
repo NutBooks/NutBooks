@@ -65,3 +65,5 @@ go test -v -cover ./... | tee TestResults
     - <https://go.dev/doc/comment>
 - DB behind traefik
     - <https://dev.to/kanzitelli/deploying-postgresql-and-redis-behind-traefik-in-the-cloud-5an2>
+- traefik tls
+    - <https://doc.traefik.io/traefik/user-guides/docker-compose/acme-tls/>

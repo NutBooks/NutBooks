@@ -5,7 +5,7 @@ name: Backend - API server tests
 
 on:
   push:
-    branches-ignore: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
     branches: [ "main" ]
 

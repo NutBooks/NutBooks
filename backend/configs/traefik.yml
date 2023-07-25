@@ -14,12 +14,12 @@ global:
 # Optional
 #
 entryPoints:
-  web:
-    address: :80
+  # web:
+  #   address: :80
 
   websecure:
     address: :443
-  
+
   mysql:
     address: :3306
 
@@ -32,13 +32,13 @@ entryPoints:
 #
 # Optional
 #
-#log:
+log:
 # Log level
 #
 # Optional
 # Default: "ERROR"
 #
-#  level: DEBUG
+  level: INFO
 
 # Sets the filepath for the traefik log. If not specified, stdout will be used.
 # Intermediate directories are created if necessary.
@@ -65,7 +65,7 @@ entryPoints:
 #
 # Optional
 #
-#accessLog:
+accessLog: {}
 # Sets the file path for the access log. If not specified, stdout will be used.
 # Intermediate directories are created if necessary.
 #
