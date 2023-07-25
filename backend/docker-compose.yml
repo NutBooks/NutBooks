@@ -4,27 +4,48 @@ volumes:
   mysql_data:
 
 services:
-  db:
+  traefik:
+    image: traefik:v2.10
+    restart: unless-stopped
+    ports:
+      - 443:443
+      # - 8080:8080 # dashboard
+      - ${MYSQL_PORT}:3306 # mysql
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configs/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ../.cert/:/.cert:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=PathPrefix(`/api`, `/dashboard`)
+      - traefik.http.routers.dashboard.service=api@internal
+      - certificatesresolvers.myresolver.acme.tlschallenge=true
+      - certificatesresolvers.myresolver.acme.email=cheesecat47@gmail.com
+      - certificatesresolvers.myresolver.acme.storage=/.cert/acme.json
+
+  mysql:
     image: mysql:8
     restart: unless-stopped
     volumes:
       - mysql_data:/var/lib/mysql
-    ports:
-      - ${MYSQL_PORT}:3306
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.mysql.rule=HostSNI(`*`)
+      - traefik.tcp.routers.mysql.entryPoints=mysql
+      - traefik.tcp.routers.mysql.service=mysql
+      - traefik.tcp.services.mysql.loadbalancer.server.port=3306
 
-  api:
+  fiber:
     build:
       context: .
       dockerfile: Dockerfile
     image: ${DOCKER_REGISTRY}/nutbooks-api
     restart: unless-stopped
-    ports:
-      - ${API_PORT}:${API_PORT}
     volumes:
       - ./wait-for-it.sh:/wait-for-it.sh
     environment:
@@ -32,11 +53,17 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      API_PORT: ${API_PORT}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
     command: 
       - /bin/bash
       - -c
       - |
-        /wait-for-it.sh -t 10 ${MYSQL_HOST}:${MYSQL_PORT} -- /main run
+        /wait-for-it.sh -t 10 mysql:3306 -- /main run
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.fiber.tls=true
+      - traefik.http.routers.fiber.rule=Host(`${HOST}`)&&PathPrefix(`/`)
+      - traefik.http.routers.fiber.entryPoints=websecure
+      - traefik.http.routers.fiber.tls.certresolver=myresolver
+      - traefik.http.services.fiber.loadbalancer.server.port=${API_PORT}
