@@ -39,15 +39,35 @@ definitions:
     properties:
       email:
         example: ""
+        maxLength: 50
+        minLength: 5
         type: string
       name:
         example: ""
+        maxLength: 50
+        minLength: 1
         type: string
     required:
     - email
     - name
     type: object
   models.AddUserResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.GetAllUsersResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.GetUserByIdResponse:
     properties:
       data: {}
       error:
@@ -104,27 +124,7 @@ paths:
       summary: offset부터 limit까지 북마크 목록을 반환
       tags:
       - bookmark
-  /api/v1/bookmark/{id}:
-    get:
-      parameters:
-      - description: Bookmark ID
-        in: path
-        name: bookmark_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.GetBookmarkByIdJSONResult'
-        "400":
-          description: Bad Request
-      summary: ID를 사용해 북마크 1개 정보 읽기
-      tags:
-      - bookmark
-  /api/v1/bookmark/new:
+  /api/v1/bookmark/:
     post:
       consumes:
       - application/json
@@ -146,7 +146,62 @@ paths:
       summary: 북마크를 DB에 추가하는 API
       tags:
       - bookmark
+  /api/v1/bookmark/{id}:
+    get:
+      parameters:
+      - description: Bookmark ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetBookmarkByIdJSONResult'
+        "400":
+          description: Bad Request
+      summary: ID를 사용해 북마크 1개 정보 읽기
+      tags:
+      - bookmark
   /api/v1/user/:
+    get:
+      parameters:
+      - description: limit과 offset은 같이 입력해야 합니다.
+        in: query
+        name: offset
+        type: integer
+      - description: limit과 offset은 같이 입력해야 합니다.
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.GetAllUsersResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.User'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetAllUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.GetAllUsersResponse'
+      summary: 모든 유저 목록 반환
+      tags:
+      - user
     post:
       parameters:
       - description: body params
@@ -176,6 +231,37 @@ paths:
           schema:
             $ref: '#/definitions/models.AddUserResponse'
       summary: 새 유저를 추가하는 API
+      tags:
+      - user
+  /api/v1/user/{id}:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.GetUserByIdResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetUserByIdResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.AddUserResponse'
+      summary: UserID를 사용해 유저 1명 정보 읽기
       tags:
       - user
 swagger: "2.0"
