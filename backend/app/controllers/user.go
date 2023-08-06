@@ -2,11 +2,10 @@ package controllers
 
 import (
 	"api/app/utils"
-	conn "api/db"
+	"api/db/crud"
 	"api/db/models"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 // AddUserHandler
@@ -46,25 +45,8 @@ func AddUserHandler(c *fiber.Ctx) error {
 		Authority: models.AuthorityNone,
 	}
 
-	db, err := conn.GetDB()
+	err = crud.AddUser(user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	result := db.Create(user)
-	if result == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -88,7 +70,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
 //	@Failure	400	{object}	models.GetUserByIdResponse{}
 //	@Failure	500	{object}	models.AddUserResponse{}
-//	@Router		/api/v1/user/{id} [get]
+//	@Router		/api/v1/user/{id}/ [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
 
@@ -111,29 +93,11 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := conn.GetDB()
+	found, err := crud.GetUserById(params.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	found := &models.User{}
-	result := db.First(found, params.ID)
-	if result == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	if result.Error == gorm.ErrRecordNotFound {
-		return c.Status(fiber.StatusOK).JSON(models.GetUserByIdResponse{
-			Error:   true,
-			Message: result.Error.Error(),
 			Data:    nil,
 		})
 	}
@@ -178,27 +142,11 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := conn.GetDB()
+	found, err := crud.GetAllUsers(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	var found []models.User
-	var result *gorm.DB
-	if params.Limit == 0 && params.Offset == 0 {
-		result = db.Find(&found)
-	} else {
-		result = db.Limit(params.Limit).Offset(params.Offset).Find(&found)
-	}
-
-	if result == nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
-			Error:   true,
-			Message: result.Error.Error(),
 			Data:    nil,
 		})
 	}
