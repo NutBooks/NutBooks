@@ -19,7 +19,7 @@ func PublicRoutes(app *fiber.App) {
 	// Bookmark router
 	bookmark := v1.Group("/bookmark")
 	bookmark.Post("/", controllers.AddBookmarkHandler)
-	bookmark.Get("/:id", controllers.GetBookmarkByIdHandler)
+	bookmark.Get("/:id/", controllers.GetBookmarkByIdHandler)
 	bookmark.Get("/", controllers.GetAllBookmarksHandler)
 
 	// User router
