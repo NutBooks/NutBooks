@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"api/app/utils"
-	conn "api/db"
+	"api/db/crud"
 	"api/db/models"
-	"errors"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 // AddBookmarkHandler
@@ -26,7 +24,8 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 
 	params := &models.AddBookmarkRequest{}
 
-	if err := c.BodyParser(params); err != nil {
+	err := c.BodyParser(params)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -44,7 +43,13 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := conn.GetDB()
+	bookmark := &models.Bookmark{
+		UserID: params.UserID,
+		Title:  params.Title,
+		Link:   params.Link,
+	}
+
+	err = crud.AddBookmark(bookmark)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
@@ -53,25 +58,10 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	bookmark := &models.Bookmark{
-		UserID: params.UserID,
-		Title:  params.Title,
-		Link:   params.Link,
-	}
-
-	result := db.Create(bookmark)
-	if result.Error != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
-			Error:   true,
-			Message: result.Error.Error(),
-			Data:    nil,
-		})
-	}
-
 	return c.Status(fiber.StatusOK).JSON(models.AddBookmarkResponse{
 		Error:   false,
 		Message: "Success",
-		Data:    nil,
+		Data:    bookmark,
 	})
 }
 
@@ -85,7 +75,6 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 //	@Failure	400	{object}	models.GetBookmarkByIdResponse{}
 //	@Router		/api/v1/bookmark/{id}/ [get]
 func GetBookmarkByIdHandler(c *fiber.Ctx) error {
-
 	param := models.Bookmark{}
 
 	err := c.ParamsParser(&param)
@@ -97,29 +86,11 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := conn.GetDB()
+	found, err := crud.GetBookmarkById(param.ID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	var found models.Bookmark
-	result := db.First(&found, param.ID)
-	if result == nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
-			Error:   true,
-			Message: "Cannot find this bookmark",
-			Data:    nil,
-		})
-	}
-
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
-			Error:   true,
-			Message: result.Error.Error(),
 			Data:    nil,
 		})
 	}
@@ -155,33 +126,18 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
 		})
 	}
 
-	db, err := conn.GetDB()
+	found, err := crud.GetAllBookmarks(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	var found []models.Bookmark
-	var result *gorm.DB
-	if params.Limit == 0 && params.Offset == 0 {
-		result = db.Find(&found)
-	} else {
-		result = db.Limit(params.Limit).Offset(params.Offset).Find(&found)
-	}
-	if result == nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
-			Error:   true,
-			Message: "Cannot find any bookmarks",
 			Data:    nil,
 		})
 	}
