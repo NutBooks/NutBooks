@@ -47,6 +47,61 @@ $ ./bin/main migrate
 
 - <http://localhost:8081/docs>
 
+```mermaid
+graph LR
+  subgraph "EndpointLayer('/api/v1')"
+		direction TB
+		subgraph "/auth"
+			E.SignUp["/signup/ POST"]
+			E.LogIn["/login/ POST"]
+		end
+		subgraph "/bookmark"
+			E.AddBookmark["/ POST"]
+			E.GetBookMarkById["/{id}/ GET"]
+			E.GetAllBookmarks["/ GET"]
+		end
+		subgraph "/user"
+			E.AddUser["/ POST"]
+			E.GetUserById["/{id}/ GET"]
+			E.GetAllUsers["/ GET"]
+		end
+	end 
+	subgraph ControllerLayer
+		subgraph "Auth Handler"
+			E.SignUp --> C.SignUpHandler[SignUpHandler]
+			E.LogIn --> C.LogInHandler[LogInHandler]		
+		end
+		subgraph "Bookmark Handler"
+			E.AddBookmark --> C.AddBookmarkHandler[AddBookmarkHandler]
+			E.GetBookMarkById --> C.GetBookmarkHandler[GetBookmarkHandler]
+			E.GetAllBookmarks --> C.GetAllBookmarksHandler[GetAllBookmarksHandler]
+		end
+		subgraph "User Handler"
+			E.AddUser --> C.AddUserHandler[AddUserHandler]
+			E.GetUserById --> C.GetUserByIdHandler[GetUserByIdHandler]
+			E.GetAllUsers --> C.GetAllUsersHandler[GetAllUsersHandler]
+		end
+	end
+	subgraph CRUDLayer
+		subgraph UserCRUD
+			C.SignUpHandler --> GetUserById
+			C.SignUpHandler --> AddUser
+			C.LogInHandler --> GetUserById
+			C.AddUserHandler --> AddUser
+			C.GetUserByIdHandler --> GetUserById
+			C.GetAllUsersHandler --> GetUsers
+		end
+		subgraph BookmarkCRUD
+			C.AddBookmarkHandler --> AddBookmark
+			C.GetBookmarkHandler --> GetBookmarkById
+			C.GetAllBookmarksHandler --> GetAllBookmarks
+		end
+	end
+	UserCRUD --> DB[("`**DB**
+											MySQL`")]
+	BookmarkCRUD --> DB
+```
+
 ## 개발 환경
 
 ### 테스팅
