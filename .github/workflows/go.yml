@@ -6,7 +6,8 @@ name: Backend - API server tests
 on:
   push:
     branches:
-      - '.+/BE/.+'
+      - 'develop'
+      - '**/BE/**'
 
 jobs:
   test:
