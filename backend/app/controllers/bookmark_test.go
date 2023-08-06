@@ -38,8 +38,9 @@ func TestAddBookmark(t *testing.T) {
 			method:      "POST",
 			route:       "/api/v1/bookmark/",
 			body: models.AddBookmarkRequest{
-				Title: "bookmark_test case 0 title",
-				Link:  "https://cheesecat47.github.io/bookmark_test/case0/link",
+				UserID: 1,
+				Title:  "bookmark_test case 0 title",
+				Link:   "https://cheesecat47.github.io/bookmark_test/case0/link",
 			},
 			expectedError: false,
 			expectedCode:  http.StatusOK,
@@ -50,23 +51,33 @@ func TestAddBookmark(t *testing.T) {
 			method:      "POST",
 			route:       "/api/v1/bookmark/",
 			body: models.AddBookmarkRequest{
-				UserID: 0,
+				UserID: 1,
 				Link:   "https://cheesecat47.github.io/bookmark_test/case1/link",
 			},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			expectedError: true,
+			expectedCode:  http.StatusBadRequest,
 		},
 		{
 			description: "case 2: without link - this should return error",
 			method:      "POST",
 			route:       "/api/v1/bookmark/",
 			body: models.AddBookmarkRequest{
-				UserID: 0,
+				UserID: 1,
 				Title:  "bookmark_test case 2 title",
 			},
 			expectedError: true,
 			expectedCode:  http.StatusBadRequest,
 			expectedBody:  "link is required parameter",
+		},
+		{
+			description: "case 3: without UserID",
+			method:      "POST",
+			route:       "/api/v1/bookmark/",
+			body: models.AddBookmarkRequest{
+				Link: "https://cheesecat47.github.io/bookmark_test/case1/link",
+			},
+			expectedError: false,
+			expectedCode:  http.StatusBadRequest,
 		},
 	}
 
@@ -85,7 +96,11 @@ func TestAddBookmark(t *testing.T) {
 		t.Log("resp: ", resp)
 		require.NoError(t, err)
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		result := &models.AddBookmarkResponse{}
+		err = json.NewDecoder(resp.Body).Decode(result)
+		require.NoError(t, err)
+
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
@@ -136,7 +151,11 @@ func TestGetBookmarkById(t *testing.T) {
 		t.Log("resp: ", resp)
 		require.NoError(t, err)
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		result := &models.GetBookmarkByIdResponse{}
+		err = json.NewDecoder(resp.Body).Decode(result)
+		require.NoError(t, err)
+
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
@@ -177,17 +196,17 @@ func TestGetAllBookmarks(t *testing.T) {
 				Limit:  1,
 			},
 			expectedError: false,
-			expectedCode:  http.StatusBadRequest,
+			expectedCode:  http.StatusOK,
 		},
 		{
-			description: "case 2: no offset -> error",
+			description: "case 2: no offset",
 			method:      "GET",
 			route:       "/api/v1/bookmark/",
 			body: models.GetAllBookmarksRequest{
 				Limit: 2,
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
+			expectedError: false,
+			expectedCode:  http.StatusOK,
 		},
 	}
 
@@ -205,10 +224,10 @@ func TestGetAllBookmarks(t *testing.T) {
 		t.Log("resp: ", resp)
 		require.NoError(t, err)
 
-		result := &models.GetAllUsersResponse{}
+		result := &models.GetAllBookmarksResponse{}
 		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err)
+		require.NoError(t, err, result.Message)
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }

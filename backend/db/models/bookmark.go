@@ -14,9 +14,9 @@ type Bookmark struct {
 
 type (
 	AddBookmarkRequest struct {
-		UserID uint   `json:"user_id"`
-		Title  string `json:"title"`
-		Link   string `json:"link" example:"https://cheesecat47.github.io"`
+		UserID uint   `validate:"required,number,min=1" json:"user_id"`
+		Title  string `validate:"min=1" default:"" json:"title"`
+		Link   string `validate:"required,http_url" json:"link" example:"https://cheesecat47.github.io"`
 	}
 
 	AddBookmarkResponse struct {
@@ -26,7 +26,7 @@ type (
 	}
 
 	GetBookmarkByIdRequest struct {
-		ID int `json:"id"`
+		ID int `validate:"required,number,min=1" json:"id"`
 	}
 
 	GetBookmarkByIdResponse struct {
@@ -36,8 +36,8 @@ type (
 	}
 
 	GetAllBookmarksRequest struct {
-		Offset int `json:"offset"`
-		Limit  int `json:"limit"`
+		Offset int `validate:"number,min=0" json:"offset"`
+		Limit  int `validate:"number,min=0" json:"limit"`
 	}
 
 	GetAllBookmarksResponse struct {

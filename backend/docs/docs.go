@@ -29,7 +29,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookmark": {
+        "/api/v1/bookmark/": {
             "get": {
                 "produces": [
                     "application/json"
@@ -56,16 +56,32 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.GetAllBookmarksJSONResult"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.GetAllBookmarksResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Bookmark"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAllBookmarksResponse"
+                        }
                     }
                 }
-            }
-        },
-        "/api/v1/bookmark/": {
+            },
             "post": {
                 "description": "새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.",
                 "consumes": [
@@ -81,25 +97,43 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "body params",
-                        "name": "request",
+                        "name": "params",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.AddBookmarkJsonRequest"
+                            "$ref": "#/definitions/models.AddBookmarkRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.AddBookmarkResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Bookmark"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddBookmarkResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/v1/bookmark/{id}": {
+        "/api/v1/bookmark/{id}/": {
             "get": {
                 "produces": [
                     "application/json"
@@ -121,11 +155,26 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.GetBookmarkByIdJSONResult"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.GetBookmarkByIdResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Bookmark"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetBookmarkByIdResponse"
+                        }
                     }
                 }
             }
@@ -242,7 +291,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/{id}": {
+        "/api/v1/user/{id}/": {
             "get": {
                 "produces": [
                     "application/json"
@@ -296,48 +345,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controllers.AddBookmarkJsonRequest": {
-            "type": "object",
-            "properties": {
-                "link": {
-                    "type": "string",
-                    "example": "https://cheesecat47.github.io"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "controllers.GetAllBookmarksJSONResult": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {}
-                },
-                "error": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.GetBookmarkByIdJSONResult": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "gorm.DeletedAt": {
             "type": "object",
             "properties": {
@@ -347,6 +354,39 @@ const docTemplate = `{
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "models.AddBookmarkRequest": {
+            "type": "object",
+            "required": [
+                "link",
+                "user_id"
+            ],
+            "properties": {
+                "link": {
+                    "type": "string",
+                    "example": "https://cheesecat47.github.io"
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "user_id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "models.AddBookmarkResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -383,7 +423,57 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Bookmark": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.GetAllBookmarksResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "models.GetAllUsersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetBookmarkByIdResponse": {
             "type": "object",
             "properties": {
                 "data": {},

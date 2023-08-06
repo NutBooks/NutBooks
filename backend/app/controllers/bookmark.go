@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/app/utils"
 	conn "api/db"
 	"api/db/models"
 	"errors"
@@ -23,9 +24,9 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 	// Get claims from JWT
 	// Check user permissions to create a new bookmark
 
-	bookmark := &models.Bookmark{}
+	params := &models.AddBookmarkRequest{}
 
-	if err := c.BodyParser(bookmark); err != nil {
+	if err := c.BodyParser(params); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -33,11 +34,13 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	if bookmark.Link == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
+	validator := &utils.Validator{}
+	validateErrs := validator.Validate(params)
+	if validateErrs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
 			Error:   true,
-			Message: "link is required parameter",
-			Data:    nil,
+			Message: "Validation failed",
+			Data:    validateErrs,
 		})
 	}
 
@@ -50,7 +53,13 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	result := db.Create(&bookmark)
+	bookmark := &models.Bookmark{
+		UserID: params.UserID,
+		Title:  params.Title,
+		Link:   params.Link,
+	}
+
+	result := db.Create(bookmark)
 	if result.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
@@ -133,8 +142,8 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 //	@Failure	400		{object}	models.GetAllBookmarksResponse{}
 //	@Router		/api/v1/bookmark/ [get]
 func GetAllBookmarksHandler(c *fiber.Ctx) error {
-	param := &models.GetAllBookmarksRequest{}
-	err := c.QueryParser(&param)
+	params := &models.GetAllBookmarksRequest{}
+	err := c.QueryParser(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
 			Error:   true,
@@ -143,11 +152,13 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	if (param.Limit > 0 && param.Offset == 0) || (param.Limit == 0 && param.Offset > 0) {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
+	validator := &utils.Validator{}
+	validateErrs := validator.Validate(params)
+	if validateErrs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
 			Error:   true,
-			Message: "limit, offset은 같이 설정되어야 하고, 0 이상 정수를 입력해주세요.",
-			Data:    nil,
+			Message: "Validation failed",
+			Data:    validateErrs,
 		})
 	}
 
@@ -156,15 +167,16 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
 			Error:   true,
 			Message: err.Error(),
+			Data:    nil,
 		})
 	}
 
 	var found []models.Bookmark
 	var result *gorm.DB
-	if param.Limit == 0 && param.Offset == 0 {
+	if params.Limit == 0 && params.Offset == 0 {
 		result = db.Find(&found)
 	} else {
-		result = db.Limit(param.Limit).Offset(param.Offset).Find(&found)
+		result = db.Limit(params.Limit).Offset(params.Offset).Find(&found)
 	}
 	if result == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{

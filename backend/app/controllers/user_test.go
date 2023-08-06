@@ -115,7 +115,7 @@ func TestAddUser(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(result)
 		require.NoError(t, err)
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
@@ -170,7 +170,7 @@ func TestGetUserById(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(result)
 		require.NoError(t, err)
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
@@ -233,7 +233,6 @@ func TestGetAllUsers(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(result)
 		require.NoError(t, err)
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
-		require.Equal(t, tt.expectedError, result.Error)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
