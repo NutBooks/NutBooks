@@ -47,9 +47,7 @@ type (
 		Data    interface{} `json:"data"`
 		Message string      `json:"message"`
 	}
-)
 
-type (
 	GetUserByIdRequest struct {
 		ID int `validate:"required,number,min=1" json:"id"`
 	}

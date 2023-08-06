@@ -6,12 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAddUser(t *testing.T) {
@@ -101,28 +101,21 @@ func TestAddUser(t *testing.T) {
 
 		buf := &bytes.Buffer{}
 		err := json.NewEncoder(buf).Encode(tt.body)
-		if err != nil {
-			t.Error("Case #", i, ": Failed to convert test case to body param, ", err)
-			t.Fail()
-		}
+		require.NoError(t, err)
 
 		req := httptest.NewRequest(tt.method, tt.route, buf)
 		req.Header.Set("Content-Type", "application/json")
-
 		t.Log("Case #", i, ": req: ", req)
 
 		resp, err := app.Test(req, -1)
 		t.Log("Case #", i, ": resp: ", resp)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		result := &models.AddUserResponse{}
 		err = json.NewDecoder(resp.Body).Decode(result)
-		if err != nil {
-			t.Error("Error while parsing response: ", err)
-			t.Fail()
-		}
+		require.NoError(t, err)
 
-		assert.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
 	}
 }
 
@@ -133,7 +126,7 @@ func TestGetUserById(t *testing.T) {
 
 	// User
 	user := route.Group("/user")
-	user.Get("/:id", GetUserByIdHandler)
+	user.Get("/:id/", GetUserByIdHandler)
 
 	t.Helper()
 
@@ -163,28 +156,21 @@ func TestGetUserById(t *testing.T) {
 
 		buf := &bytes.Buffer{}
 		err := json.NewEncoder(buf).Encode(tt.body)
-		if err != nil {
-			t.Error("Case #", i, ": Failed to convert test case to body param, ", err)
-			t.Fail()
-		}
+		require.NoError(t, err)
 
 		req := httptest.NewRequest(tt.method, fmt.Sprintf("%s%d", tt.route, tt.body.ID), buf)
 		req.Header.Set("Content-Type", "application/json")
-
 		t.Log("Case #", i, ": req: ", req)
 
 		resp, err := app.Test(req, -1)
 		t.Log("Case #", i, ": resp: ", resp)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		result := &models.GetUserByIdResponse{}
 		err = json.NewDecoder(resp.Body).Decode(result)
-		if err != nil {
-			t.Error("Error while parsing response: ", err)
-			t.Fail()
-		}
+		require.NoError(t, err)
 
-		assert.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
 	}
 }
 
@@ -232,24 +218,22 @@ func TestGetAllUsers(t *testing.T) {
 		t.Log("Case #", i, ": ", tt)
 
 		req := httptest.NewRequest(
-			"GET",
-			fmt.Sprintf("/api/v1/user/?offset=%d&limit=%d", tt.body.Offset, tt.body.Limit),
+			tt.method,
+			fmt.Sprintf("%s?offset=%d&limit=%d", tt.route, tt.body.Offset, tt.body.Limit),
 			nil,
 		)
-
+		req.Header.Set("Content-Type", "application/json")
 		t.Log("Case #", i, ": req: ", req)
+
 		resp, err := app.Test(req, -1)
 		t.Log("Case #", i, ": resp: ", resp)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		result := &models.GetAllUsersResponse{}
 		err = json.NewDecoder(resp.Body).Decode(result)
-		if err != nil {
-			t.Error("Error while parsing response: ", err)
-			t.Fail()
-		}
+		require.NoError(t, err)
 
-		assert.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
-		assert.Equal(t, tt.expectedError, result.Error)
+		require.Equal(t, tt.expectedCode, resp.StatusCode, tt.description)
+		require.Equal(t, tt.expectedError, result.Error)
 	}
 }
