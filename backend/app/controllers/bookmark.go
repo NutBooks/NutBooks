@@ -15,7 +15,7 @@ type AddBookmarkJsonRequest struct {
 	Link   string `json:"link" example:"https://cheesecat47.github.io"`
 }
 
-// AddBookmark
+// AddBookmarkHandler
 //
 //	@Summary		북마크를 DB에 추가하는 API
 //	@Description	새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
@@ -26,7 +26,7 @@ type AddBookmarkJsonRequest struct {
 //	@Success		200
 //	@Failure		400
 //	@Router			/api/v1/bookmark/ [post]
-func AddBookmark(c *fiber.Ctx) error {
+func AddBookmarkHandler(c *fiber.Ctx) error {
 	// Get claims from JWT
 	// Check user permissions to create a new bookmark
 
@@ -77,7 +77,7 @@ type GetBookmarkByIdJSONResult struct {
 	Data    interface{} `json:"data"`
 }
 
-// GetBookmarkById
+// GetBookmarkByIdHandler
 //
 //	@Summary	ID를 사용해 북마크 1개 정보 읽기
 //	@Tags		bookmark
@@ -86,7 +86,7 @@ type GetBookmarkByIdJSONResult struct {
 //	@Success	200	{object}	GetBookmarkByIdJSONResult
 //	@Failure	400
 //	@Router		/api/v1/bookmark/{id} [get]
-func GetBookmarkById(c *fiber.Ctx) error {
+func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 
 	param := models.Bookmark{}
 
@@ -142,7 +142,7 @@ type GetAllBookmarksJSONResult struct {
 	Data    []interface{} `json:"data"`
 }
 
-// GetAllBookmarks
+// GetAllBookmarksHandler
 //
 //	@Summary	offset부터 limit까지 북마크 목록을 반환
 //	@Tags		bookmark
@@ -153,7 +153,7 @@ type GetAllBookmarksJSONResult struct {
 //	@Success	200		{object}	GetAllBookmarksJSONResult
 //	@Failure	400
 //	@Router		/api/v1/bookmark [get]
-func GetAllBookmarks(c *fiber.Ctx) error {
+func GetAllBookmarksHandler(c *fiber.Ctx) error {
 
 	param := GetAllBookmarksQueryParams{}
 

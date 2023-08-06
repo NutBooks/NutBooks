@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// AddUser
+// AddUserHandler
 //
 //	@Summary	새 유저를 추가하는 API
 //	@Tags		user
@@ -19,7 +19,7 @@ import (
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user/ [post]
-func AddUser(c *fiber.Ctx) error {
+func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 
 	err := c.BodyParser(params)
@@ -79,7 +79,7 @@ func AddUser(c *fiber.Ctx) error {
 	})
 }
 
-// GetUserById
+// GetUserByIdHandler
 //
 //	@Summary	UserID를 사용해 유저 1명 정보 읽기
 //	@Tags		user
@@ -89,7 +89,7 @@ func AddUser(c *fiber.Ctx) error {
 //	@Failure	400	{object}	models.GetUserByIdResponse{}
 //	@Failure	500	{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user/{id} [get]
-func GetUserById(c *fiber.Ctx) error {
+func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
 
 	err := c.ParamsParser(params)
@@ -145,7 +145,7 @@ func GetUserById(c *fiber.Ctx) error {
 	})
 }
 
-// GetAllUsers
+// GetAllUsersHandler
 //
 //	@Summary	모든 유저 목록 반환
 //	@Tags		user
@@ -157,7 +157,7 @@ func GetUserById(c *fiber.Ctx) error {
 //
 //	@Failure	500		{object}	models.GetAllUsersResponse{}
 //	@Router		/api/v1/user/ [get]
-func GetAllUsers(c *fiber.Ctx) error {
+func GetAllUsersHandler(c *fiber.Ctx) error {
 	params := &models.GetAllUsersRequest{}
 	err := c.QueryParser(params)
 	if err != nil {

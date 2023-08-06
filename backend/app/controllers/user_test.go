@@ -21,7 +21,7 @@ func TestAddUser(t *testing.T) {
 
 	// User
 	user := route.Group("/user")
-	user.Post("/", AddUser)
+	user.Post("/", AddUserHandler)
 
 	t.Helper()
 
@@ -133,7 +133,7 @@ func TestGetUserById(t *testing.T) {
 
 	// User
 	user := route.Group("/user")
-	user.Get("/:id", GetUserById)
+	user.Get("/:id", GetUserByIdHandler)
 
 	t.Helper()
 
@@ -195,7 +195,7 @@ func TestGetAllUsers(t *testing.T) {
 
 	// User
 	user := route.Group("/user")
-	user.Get("/", GetAllUsers)
+	user.Get("/", GetAllUsersHandler)
 
 	t.Helper()
 

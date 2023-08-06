@@ -17,7 +17,7 @@ func TestAddBookmark(t *testing.T) {
 	config := configs.FiberConfig()
 	app := fiber.New(config)
 	route := app.Group("/api/v1")
-	route.Post("/bookmark/new", AddBookmark)
+	route.Post("/bookmark/new", AddBookmarkHandler)
 
 	t.Helper()
 
@@ -71,7 +71,7 @@ func TestGetBookmarkById(t *testing.T) {
 	config := configs.FiberConfig()
 	app := fiber.New(config)
 	route := app.Group("/api/v1")
-	route.Get("/bookmark/:id", GetBookmarkById)
+	route.Get("/bookmark/:id", GetBookmarkByIdHandler)
 
 	t.Helper()
 
@@ -114,7 +114,7 @@ func TestGetAllBookmarks(t *testing.T) {
 	config := configs.FiberConfig()
 	app := fiber.New(config)
 	route := app.Group("/api/v1")
-	route.Get("/bookmark/", GetAllBookmarks)
+	route.Get("/bookmark/", GetAllBookmarksHandler)
 
 	t.Helper()
 
