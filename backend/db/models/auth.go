@@ -2,22 +2,37 @@ package models
 
 import "gorm.io/gorm"
 
-type SocialLogin struct {
-	gorm.Model
-	UserID      uint   `gorm:"not null;unique"`
-	SocialCode  uint   `gorm:"not null;"`
-	ExternalID  string `gorm:"not null;unique"`
-	AccessToken string `gorm:"not null;unique"`
-}
+type (
+	SocialLogin struct {
+		gorm.Model
+		UserID      uint   `gorm:"not null;unique"`
+		SocialCode  uint   `gorm:"not null;"`
+		ExternalID  string `gorm:"not null;unique"`
+		AccessToken string `gorm:"not null;unique"`
+	}
 
-type Password struct {
-	UserID   uint `gorm:"not null;unique"`
-	Salt     uint
-	Password string `gorm:"not null;"`
-}
+	Password struct {
+		UserID   uint `gorm:"not null;unique"`
+		Salt     uint
+		Password string `gorm:"not null;"`
+	}
 
-type Cidi struct {
-	UserID uint `gorm:"not null;unique"`
-	Ci     string
-	Di     string
-}
+	Cidi struct {
+		UserID uint `gorm:"not null;unique"`
+		Ci     string
+		Di     string
+	}
+)
+
+type (
+	LogInRequest struct {
+		Email    string `validate:"required,min=5,max=50,email" json:"email" example:""`
+		Password string `validate:"required,min=8,max=12,alphanum" json:"password" example:"비밀번호는 영문 + 숫자 8-12자리"`
+	}
+
+	LogInResponse struct {
+		Error   bool        `json:"error"`
+		Data    interface{} `json:"data"`
+		Message string      `json:"message"`
+	}
+)

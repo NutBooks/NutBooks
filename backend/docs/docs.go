@@ -29,6 +29,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/auth/login/": {
+            "post": {
+                "description": "비밀번호는 영문 + 숫자 8-12자리",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "로그인 API",
+                "parameters": [
+                    {
+                        "maxLength": 50,
+                        "minLength": 5,
+                        "type": "string",
+                        "example": "",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 12,
+                        "minLength": 8,
+                        "type": "string",
+                        "example": "비밀번호는 영문 + 숫자 8-12자리",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/bookmark/": {
             "get": {
                 "produces": [
@@ -486,6 +532,18 @@ const docTemplate = `{
             }
         },
         "models.GetUserByIdResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LogInResponse": {
             "type": "object",
             "properties": {
                 "data": {},
