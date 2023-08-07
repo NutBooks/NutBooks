@@ -25,7 +25,7 @@ func AddUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func GetUserById(id int) (*models.User, error) {
+func GetUserById(id uint) (*models.User, error) {
 	db, err := conn.GetDB()
 	if err != nil {
 		return nil, err
@@ -60,6 +60,25 @@ func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
 
 	if result == nil {
 		return nil, errors.New("Failed to find users")
+	}
+
+	return found, nil
+}
+
+func GetUserIdByEmail(email string) (*models.User, error) {
+	db, err := conn.GetDB()
+	if err != nil {
+		return nil, err
+	}
+
+	found := &models.User{}
+	result := db.Where("email = ?", email).First(&found)
+	if result == nil {
+		return nil, errors.New("Cannot find this user")
+	}
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
 	}
 
 	return found, nil

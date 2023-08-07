@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"api/app/utils"
+	"api/db/crud"
 	"api/db/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -32,10 +33,23 @@ func LogInHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	//found, err := crud.GetUserByEmail(params.Email)
-	//if err != nil {
-	// return c.Status(fiber.StatusBadRequest).JSON(models.LogInResponse{})
-	//}
+	found, err := crud.GetUserIdByEmail(params.Email)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.LogInResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
+
+	_, err = crud.GetUserById(found.ID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.LogInResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	// auth.Password 체크 필요
 
