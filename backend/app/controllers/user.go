@@ -45,7 +45,21 @@ func AddUserHandler(c *fiber.Ctx) error {
 		Authority: models.AuthorityNone,
 	}
 
-	err = crud.AddUser(user)
+	user, err = crud.AddUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	authentication := &models.Authentication{
+		UserID: user.ID,
+		Email:  params.Email,
+	}
+
+	authentication, err = crud.AddAuthentication(authentication)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
