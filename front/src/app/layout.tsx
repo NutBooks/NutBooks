@@ -1,5 +1,6 @@
 import { Providers } from '../redux/provider';
 import '@/styles/globals.css';
+import NavBar from '@/components/Navbar';
 
 export default function RootLayout({
   children,
@@ -10,7 +11,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <header>
-          <nav></nav>
+          <nav>
+            <NavBar />
+          </nav>
         </header>
         <Providers>{children}</Providers>
       </body>
