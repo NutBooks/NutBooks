@@ -294,13 +294,31 @@ const docTemplate = `{
                 "summary": "새 유저를 추가하는 API",
                 "parameters": [
                     {
-                        "description": "body params",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.AddUserRequest"
-                        }
+                        "maxLength": 50,
+                        "minLength": 5,
+                        "type": "string",
+                        "example": "",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 50,
+                        "minLength": 1,
+                        "type": "string",
+                        "example": "",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 12,
+                        "minLength": 8,
+                        "type": "string",
+                        "example": "비밀번호는 영문 + 숫자 8-12자리",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -433,27 +451,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "models.AddUserRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "name"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 5,
-                    "example": ""
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 1,
-                    "example": ""
                 }
             }
         },

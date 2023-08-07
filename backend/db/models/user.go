@@ -28,7 +28,7 @@ type (
 	Authentication struct {
 		gorm.Model `gorm:"serializer:json"`
 		UserID     uint   `gorm:"not null;unique;"`
-		Email      string `gorm:"not null;unique;" json:"email"`
+		Email      string `validate:"min=5,max=50,email" gorm:"not null;unique;" json:"email"`
 	}
 
 	//Subscription struct {
@@ -38,8 +38,9 @@ type (
 
 type (
 	AddUserRequest struct {
-		Name  string `validate:"required,min=1,max=50" json:"name" example:""`
-		Email string `validate:"required,min=5,max=50,email" json:"email" example:""`
+		Name     string `validate:"required,min=1,max=50" json:"name" example:""`
+		Email    string `validate:"required,min=5,max=50,email" json:"email" example:""`
+		Password string `validate:"required,min=8,max=12,alphanum" json:"password" example:"비밀번호는 영문 + 숫자 8-12자리"`
 	}
 
 	AddUserResponse struct {

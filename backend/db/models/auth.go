@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type (
 	SocialLogin struct {
-		gorm.Model
+		gorm.Model  `gorm:"serializer:json"`
 		UserID      uint   `gorm:"not null;unique"`
 		SocialCode  uint   `gorm:"not null;"`
 		ExternalID  string `gorm:"not null;unique"`
@@ -12,15 +12,17 @@ type (
 	}
 
 	Password struct {
-		UserID   uint `gorm:"not null;unique"`
-		Salt     uint
-		Password string `gorm:"not null;"`
+		gorm.Model `gorm:"serializer:json"`
+		UserID     uint `gorm:"not null;unique"`
+		Salt       uint
+		Password   string `validate:"min=8,max=12,alphanum" gorm:"not null;"`
 	}
 
 	Cidi struct {
-		UserID uint `gorm:"not null;unique"`
-		Ci     string
-		Di     string
+		gorm.Model `gorm:"serializer:json"`
+		UserID     uint `gorm:"not null;unique"`
+		Ci         string
+		Di         string
 	}
 )
 

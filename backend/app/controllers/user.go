@@ -13,21 +13,16 @@ import (
 //	@Summary	새 유저를 추가하는 API
 //	@Tags		user
 //	@Produce	json
-//	@Param		params	body		models.AddUserRequest	true	"body params"
+//	@Param		params	formData	models.AddUserRequest	true	"params"
 //	@Success	200		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user/ [post]
 func AddUserHandler(c *fiber.Ctx) error {
-	params := &models.AddUserRequest{}
-
-	err := c.BodyParser(params)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
+	params := &models.AddUserRequest{
+		Name:     c.FormValue("name"),
+		Email:    c.FormValue("email"),
+		Password: c.FormValue("password"),
 	}
 
 	validator := &utils.Validator{}
@@ -40,12 +35,15 @@ func AddUserHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	// 이메일 중복 확인 로직을 추가하든, 이메일 중복 시 user create를 rollback 하든
+	// 로릭 추가 필요
+
 	user := &models.User{
 		Name:      params.Name,
 		Authority: models.AuthorityNone,
 	}
 
-	user, err = crud.AddUser(user)
+	user, err := crud.AddUser(user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
@@ -60,6 +58,20 @@ func AddUserHandler(c *fiber.Ctx) error {
 	}
 
 	authentication, err = crud.AddAuthentication(authentication)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	password := &models.Password{
+		UserID:   user.ID,
+		Password: params.Password,
+	}
+
+	password, err = crud.AddPasswordByUserId(password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
