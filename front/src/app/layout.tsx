@@ -1,4 +1,5 @@
-import { Providers } from "../redux/provider";
+import { Providers } from '../redux/provider';
+import '@/styles/globals.css';
 
 export default function RootLayout({
   children,
@@ -8,6 +9,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <header>
+          <nav></nav>
+        </header>
         <Providers>{children}</Providers>
       </body>
     </html>
