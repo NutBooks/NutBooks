@@ -1,32 +1,4 @@
 definitions:
-  controllers.AddBookmarkJsonRequest:
-    properties:
-      link:
-        example: https://cheesecat47.github.io
-        type: string
-      title:
-        type: string
-      user_id:
-        type: integer
-    type: object
-  controllers.GetAllBookmarksJSONResult:
-    properties:
-      data:
-        items: {}
-        type: array
-      error:
-        type: boolean
-      message:
-        type: string
-    type: object
-  controllers.GetBookmarkByIdJSONResult:
-    properties:
-      data: {}
-      error:
-        type: boolean
-      message:
-        type: string
-    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -34,6 +6,29 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  models.AddBookmarkRequest:
+    properties:
+      link:
+        example: https://cheesecat47.github.io
+        type: string
+      title:
+        minLength: 1
+        type: string
+      user_id:
+        minimum: 1
+        type: integer
+    required:
+    - link
+    - user_id
+    type: object
+  models.AddBookmarkResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
     type: object
   models.AddUserRequest:
     properties:
@@ -59,7 +54,40 @@ definitions:
       message:
         type: string
     type: object
+  models.Bookmark:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      link:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: integer
+    type: object
+  models.GetAllBookmarksResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
   models.GetAllUsersResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.GetBookmarkByIdResponse:
     properties:
       data: {}
       error:
@@ -101,7 +129,7 @@ paths:
       summary: Root URL - for health check
       tags:
       - /
-  /api/v1/bookmark:
+  /api/v1/bookmark/:
     get:
       parameters:
       - description: limit과 offset은 같이 입력해야 합니다
@@ -118,13 +146,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.GetAllBookmarksJSONResult'
+            allOf:
+            - $ref: '#/definitions/models.GetAllBookmarksResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Bookmark'
+                  type: array
+              type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetAllBookmarksResponse'
       summary: offset부터 limit까지 북마크 목록을 반환
       tags:
       - bookmark
-  /api/v1/bookmark/:
     post:
       consumes:
       - application/json
@@ -132,21 +168,30 @@ paths:
       parameters:
       - description: body params
         in: body
-        name: request
+        name: params
         required: true
         schema:
-          $ref: '#/definitions/controllers.AddBookmarkJsonRequest'
+          $ref: '#/definitions/models.AddBookmarkRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.AddBookmarkResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Bookmark'
+              type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.AddBookmarkResponse'
       summary: 북마크를 DB에 추가하는 API
       tags:
       - bookmark
-  /api/v1/bookmark/{id}:
+  /api/v1/bookmark/{id}/:
     get:
       parameters:
       - description: Bookmark ID
@@ -160,9 +205,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.GetBookmarkByIdJSONResult'
+            allOf:
+            - $ref: '#/definitions/models.GetBookmarkByIdResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Bookmark'
+              type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetBookmarkByIdResponse'
       summary: ID를 사용해 북마크 1개 정보 읽기
       tags:
       - bookmark
@@ -233,7 +285,7 @@ paths:
       summary: 새 유저를 추가하는 API
       tags:
       - user
-  /api/v1/user/{id}:
+  /api/v1/user/{id}/:
     get:
       parameters:
       - description: User ID

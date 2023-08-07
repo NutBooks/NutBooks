@@ -2,14 +2,13 @@ package controllers
 
 import (
 	"api/app/utils"
-	conn "api/db"
+	"api/db/crud"
 	"api/db/models"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-// AddUser
+// AddUserHandler
 //
 //	@Summary	새 유저를 추가하는 API
 //	@Tags		user
@@ -19,7 +18,7 @@ import (
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user/ [post]
-func AddUser(c *fiber.Ctx) error {
+func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 
 	err := c.BodyParser(params)
@@ -46,25 +45,8 @@ func AddUser(c *fiber.Ctx) error {
 		Authority: models.AuthorityNone,
 	}
 
-	db, err := conn.GetDB()
+	err = crud.AddUser(user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	result := db.Create(user)
-	if result == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -79,7 +61,7 @@ func AddUser(c *fiber.Ctx) error {
 	})
 }
 
-// GetUserById
+// GetUserByIdHandler
 //
 //	@Summary	UserID를 사용해 유저 1명 정보 읽기
 //	@Tags		user
@@ -88,8 +70,8 @@ func AddUser(c *fiber.Ctx) error {
 //	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
 //	@Failure	400	{object}	models.GetUserByIdResponse{}
 //	@Failure	500	{object}	models.AddUserResponse{}
-//	@Router		/api/v1/user/{id} [get]
-func GetUserById(c *fiber.Ctx) error {
+//	@Router		/api/v1/user/{id}/ [get]
+func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
 
 	err := c.ParamsParser(params)
@@ -111,29 +93,11 @@ func GetUserById(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := conn.GetDB()
+	found, err := crud.GetUserById(params.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	found := &models.User{}
-	result := db.First(found, params.ID)
-	if result == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	if result.Error == gorm.ErrRecordNotFound {
-		return c.Status(fiber.StatusOK).JSON(models.GetUserByIdResponse{
-			Error:   true,
-			Message: result.Error.Error(),
 			Data:    nil,
 		})
 	}
@@ -145,7 +109,7 @@ func GetUserById(c *fiber.Ctx) error {
 	})
 }
 
-// GetAllUsers
+// GetAllUsersHandler
 //
 //	@Summary	모든 유저 목록 반환
 //	@Tags		user
@@ -157,7 +121,7 @@ func GetUserById(c *fiber.Ctx) error {
 //
 //	@Failure	500		{object}	models.GetAllUsersResponse{}
 //	@Router		/api/v1/user/ [get]
-func GetAllUsers(c *fiber.Ctx) error {
+func GetAllUsersHandler(c *fiber.Ctx) error {
 	params := &models.GetAllUsersRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
@@ -178,27 +142,11 @@ func GetAllUsers(c *fiber.Ctx) error {
 		})
 	}
 
-	db, err := conn.GetDB()
+	found, err := crud.GetAllUsers(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	var found []models.User
-	var result *gorm.DB
-	if params.Limit == 0 && params.Offset == 0 {
-		result = db.Find(&found)
-	} else {
-		result = db.Limit(params.Limit).Offset(params.Offset).Find(&found)
-	}
-
-	if result == nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
-			Error:   true,
-			Message: result.Error.Error(),
 			Data:    nil,
 		})
 	}

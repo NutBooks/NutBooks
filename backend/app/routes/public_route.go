@@ -18,15 +18,15 @@ func PublicRoutes(app *fiber.App) {
 
 	// Bookmark router
 	bookmark := v1.Group("/bookmark")
-	bookmark.Post("/", controllers.AddBookmark)
-	bookmark.Get("/:id", controllers.GetBookmarkById)
-	bookmark.Get("/", controllers.GetAllBookmarks)
+	bookmark.Post("/", controllers.AddBookmarkHandler)
+	bookmark.Get("/:id/", controllers.GetBookmarkByIdHandler)
+	bookmark.Get("/", controllers.GetAllBookmarksHandler)
 
 	// User router
 	user := v1.Group("/user")
-	user.Post("/", controllers.AddUser)
-	user.Get("/:id", controllers.GetUserById)
-	user.Get("/", controllers.GetAllUsers)
+	user.Post("/", controllers.AddUserHandler)
+	user.Get("/:id/", controllers.GetUserByIdHandler)
+	user.Get("/", controllers.GetAllUsersHandler)
 }
 
 // Root func

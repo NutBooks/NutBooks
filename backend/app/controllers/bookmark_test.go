@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
+	"github.com/stretchr/testify/require"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -17,53 +17,90 @@ func TestAddBookmark(t *testing.T) {
 	config := configs.FiberConfig()
 	app := fiber.New(config)
 	route := app.Group("/api/v1")
-	route.Post("/bookmark/new", AddBookmark)
+
+	// bookmark
+	bookmark := route.Group("/bookmark")
+	bookmark.Post("/", AddBookmarkHandler)
 
 	t.Helper()
 
-	testCases := []models.Bookmark{
-		{ // case 0: without userId
-			Title: "bookmark_test case 0 title",
-			Link:  "https://cheesecat47.github.io/bookmark_test/case0/link",
+	testCases := []struct {
+		description   string
+		method        string
+		route         string
+		body          models.AddBookmarkRequest
+		expectedError bool
+		expectedCode  int
+		expectedBody  string
+	}{
+		{
+			description: "case 0: without userId",
+			method:      "POST",
+			route:       "/api/v1/bookmark/",
+			body: models.AddBookmarkRequest{
+				UserID: 1,
+				Title:  "bookmark_test case 0 title",
+				Link:   "https://cheesecat47.github.io/bookmark_test/case0/link",
+			},
+			expectedError: false,
+			expectedCode:  http.StatusOK,
+			expectedBody:  "Success",
 		},
-		{ // case 1: without title
-			UserID: 0,
-			Link:   "https://cheesecat47.github.io/bookmark_test/case1/link",
+		{
+			description: "case 1: without title",
+			method:      "POST",
+			route:       "/api/v1/bookmark/",
+			body: models.AddBookmarkRequest{
+				UserID: 1,
+				Link:   "https://cheesecat47.github.io/bookmark_test/case1/link",
+			},
+			expectedError: true,
+			expectedCode:  http.StatusBadRequest,
 		},
-		{ // case 2: without link - this should return error
-			UserID: 0,
-			Title:  "bookmark_test case 2 title",
+		{
+			description: "case 2: without link - this should return error",
+			method:      "POST",
+			route:       "/api/v1/bookmark/",
+			body: models.AddBookmarkRequest{
+				UserID: 1,
+				Title:  "bookmark_test case 2 title",
+			},
+			expectedError: true,
+			expectedCode:  http.StatusBadRequest,
+			expectedBody:  "link is required parameter",
+		},
+		{
+			description: "case 3: without UserID",
+			method:      "POST",
+			route:       "/api/v1/bookmark/",
+			body: models.AddBookmarkRequest{
+				Link: "https://cheesecat47.github.io/bookmark_test/case1/link",
+			},
+			expectedError: false,
+			expectedCode:  http.StatusBadRequest,
 		},
 	}
 
 	for i, tt := range testCases {
 		t.Log("Case #", i, ": ", tt)
 
-		var buf bytes.Buffer
-		err := json.NewEncoder(&buf).Encode(tt)
-		if err != nil {
-			t.Log("Case #", i, ": Failed to convert test case to body param, ", err)
-			continue
-		}
+		buf := &bytes.Buffer{}
+		err := json.NewEncoder(buf).Encode(tt.body)
+		require.NoError(t, err)
 
-		req := httptest.NewRequest(
-			"POST",
-			"/api/v1/bookmark/new",
-			&buf,
-		)
+		req := httptest.NewRequest(tt.method, tt.route, buf)
 		req.Header.Set("Content-Type", "application/json")
-
 		t.Log("req: ", req)
 
 		resp, err := app.Test(req, -1)
 		t.Log("resp: ", resp)
-		t.Log("err: ", err)
-		assert.NoError(t, err)
-		if i == 2 {
-			assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-		} else {
-			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		}
+		require.NoError(t, err)
+
+		result := &models.AddBookmarkResponse{}
+		err = json.NewDecoder(resp.Body).Decode(result)
+		require.NoError(t, err)
+
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
@@ -71,42 +108,54 @@ func TestGetBookmarkById(t *testing.T) {
 	config := configs.FiberConfig()
 	app := fiber.New(config)
 	route := app.Group("/api/v1")
-	route.Get("/bookmark/:id", GetBookmarkById)
+
+	// bookmark
+	bookmark := route.Group("/bookmark")
+	bookmark.Get("/:id/", GetBookmarkByIdHandler)
 
 	t.Helper()
 
-	testCases := []string{
-		// case 0: get bookmark which index is 1. success
-		"1",
-		// case 1: get bookmark which index is 0, fail
-		"0",
+	testCases := []struct {
+		description   string
+		method        string
+		route         string
+		body          models.GetBookmarkByIdRequest
+		expectedError bool
+		expectedCode  int
+		expectedBody  string
+	}{
+		{
+			description:   "case 0: get bookmark which index is 1. success",
+			method:        "GET",
+			route:         "/api/v1/bookmark/1/",
+			expectedError: false,
+			expectedCode:  http.StatusOK,
+		},
+		{
+			description:   "case 1: get bookmark which index is 0, fail",
+			method:        "GET",
+			route:         "/api/v1/bookmark/0/",
+			expectedError: true,
+			expectedCode:  http.StatusBadRequest,
+		},
 	}
 
 	for i, tt := range testCases {
 		t.Log("Case #", i, ": ", tt)
 
-		req := httptest.NewRequest(
-			"GET",
-			fmt.Sprintf("/api/v1/bookmark/%s", tt),
-			nil,
-		)
-
+		req := httptest.NewRequest(tt.method, tt.route, nil)
+		req.Header.Set("Content-Type", "application/json")
 		t.Log("req: ", req)
 
 		resp, err := app.Test(req, -1)
 		t.Log("resp: ", resp)
-		t.Log("err: ", err)
-		if i == 1 {
-			var result GetBookmarkByIdJSONResult
-			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-				t.Log("err while parsing response:")
-			}
-			assert.Equal(t, gorm.ErrRecordNotFound.Error(), result.Message)
-			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		}
+		require.NoError(t, err)
+
+		result := &models.GetBookmarkByIdResponse{}
+		err = json.NewDecoder(resp.Body).Decode(result)
+		require.NoError(t, err)
+
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
@@ -114,21 +163,50 @@ func TestGetAllBookmarks(t *testing.T) {
 	config := configs.FiberConfig()
 	app := fiber.New(config)
 	route := app.Group("/api/v1")
-	route.Get("/bookmark/", GetAllBookmarks)
+
+	// bookmark
+	bookmark := route.Group("/bookmark")
+	bookmark.Get("/", GetAllBookmarksHandler)
 
 	t.Helper()
 
-	testCases := []GetAllBookmarksQueryParams{
-		// case 0: get all bookmark
-		{},
-		// case 1: get bookmarks using limit and offset
+	testCases := []struct {
+		description   string
+		method        string
+		route         string
+		body          models.GetAllBookmarksRequest
+		expectedError bool
+		expectedCode  int
+		expectedBody  string
+	}{
 		{
-			Offset: 2,
-			Limit:  2,
+			description:   "case 0: get all bookmark",
+			method:        "GET",
+			route:         "/api/v1/bookmark/",
+			body:          models.GetAllBookmarksRequest{},
+			expectedError: false,
+			expectedCode:  http.StatusOK,
 		},
-		// case 2: no offset -> error
 		{
-			Limit: 2,
+			description: "case 1: get bookmarks using limit and offset",
+			method:      "GET",
+			route:       "/api/v1/bookmark/",
+			body: models.GetAllBookmarksRequest{
+				Offset: 0,
+				Limit:  1,
+			},
+			expectedError: false,
+			expectedCode:  http.StatusOK,
+		},
+		{
+			description: "case 2: no offset",
+			method:      "GET",
+			route:       "/api/v1/bookmark/",
+			body: models.GetAllBookmarksRequest{
+				Limit: 2,
+			},
+			expectedError: false,
+			expectedCode:  http.StatusOK,
 		},
 	}
 
@@ -136,33 +214,20 @@ func TestGetAllBookmarks(t *testing.T) {
 		t.Log("Case #", i, ": ", tt)
 
 		req := httptest.NewRequest(
-			"GET",
-			fmt.Sprintf("/api/v1/bookmark?offset=%d&limit=%d", tt.Offset, tt.Limit),
-			nil,
-		)
-
-		t.Log("req: ", req)
+			tt.method,
+			fmt.Sprintf("%s?offset=%d&limit=%d", tt.route, tt.body.Offset, tt.body.Limit),
+			nil)
+		req.Header.Set("Content-Type", "application/json")
+		t.Log("Case #", i, ": req: ", req)
 
 		resp, err := app.Test(req, -1)
 		t.Log("resp: ", resp)
-		t.Log("err: ", err)
-		if i == 1 {
-			var result GetAllBookmarksJSONResult
-			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-				t.Log("err while parsing response:")
-			}
-			assert.Equal(t, 2, len(result.Data))
-			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		} else if i == 2 {
-			var result GetAllBookmarksJSONResult
-			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-				t.Log("err while parsing response:")
-			}
-			assert.Equal(t, "limit, offset은 같이 설정되어야 하고, 0 이상 정수를 입력해주세요.", result.Message)
-			assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		}
+		require.NoError(t, err)
+
+		result := &models.GetAllBookmarksResponse{}
+		err = json.NewDecoder(resp.Body).Decode(result)
+		require.NoError(t, err, result.Message)
+
+		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
