@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AddBookmark } from '@/utils/api';
-import { ADD_BOOKMARK } from '@/constants/serviceLayoutConstanst';
+import { AddBookmark } from '@utils/api';
+import { ADD_BOOKMARK } from '@constants/serviceLayout';
 import { BsPlusCircleFill } from 'react-icons/bs';
 
 function AddBookmarkBar() {

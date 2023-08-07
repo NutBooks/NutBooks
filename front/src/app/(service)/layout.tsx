@@ -1,4 +1,4 @@
-import AddBookmarkBar from '@/components/clientComponents/AddBookmarkBar';
+import AddBookmarkBar from '@/components/AddBookmarkBar';
 
 export default function ServiceLayout({
   children,
