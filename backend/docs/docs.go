@@ -41,22 +41,13 @@ const docTemplate = `{
                 "summary": "로그인 API",
                 "parameters": [
                     {
-                        "maxLength": 50,
-                        "minLength": 5,
-                        "type": "string",
-                        "example": "",
-                        "name": "email",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "maxLength": 12,
-                        "minLength": 8,
-                        "type": "string",
-                        "example": "비밀번호는 영문 + 숫자 8-12자리",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
+                        "description": "body params",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -68,6 +59,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.LogInResponse"
                         }
@@ -294,31 +297,13 @@ const docTemplate = `{
                 "summary": "새 유저를 추가하는 API",
                 "parameters": [
                     {
-                        "maxLength": 50,
-                        "minLength": 5,
-                        "type": "string",
-                        "example": "",
-                        "name": "email",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "maxLength": 50,
-                        "minLength": 1,
-                        "type": "string",
-                        "example": "",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "maxLength": 12,
-                        "minLength": 8,
-                        "type": "string",
-                        "example": "비밀번호는 영문 + 숫자 8-12자리",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
+                        "description": "params",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUserRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -454,6 +439,34 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AddUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 5,
+                    "example": ""
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1,
+                    "example": ""
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 12,
+                    "minLength": 8,
+                    "example": "비밀번호는 영문 + 숫자 8-12자리"
+                }
+            }
+        },
         "models.AddUserResponse": {
             "type": "object",
             "properties": {
@@ -537,6 +550,27 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "models.LogInRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 5,
+                    "example": ""
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 12,
+                    "minLength": 8,
+                    "example": "비밀번호는 영문 + 숫자 8-12자리"
                 }
             }
         },

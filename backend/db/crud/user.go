@@ -65,13 +65,13 @@ func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
 	return found, nil
 }
 
-func GetUserIdByEmail(email string) (*models.User, error) {
+func GetUserByEmail(email string) (*models.User, error) {
 	db, err := conn.GetDB()
 	if err != nil {
 		return nil, err
 	}
 
-	found := &models.User{}
+	found := &models.Authentication{}
 	result := db.Where("email = ?", email).First(&found)
 	if result == nil {
 		return nil, errors.New("Cannot find this user")
@@ -81,5 +81,15 @@ func GetUserIdByEmail(email string) (*models.User, error) {
 		return nil, result.Error
 	}
 
-	return found, nil
+	user := &models.User{}
+	result = db.First(user, found.UserID)
+	if result == nil {
+		return nil, errors.New("Cannot find this user")
+	}
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	return user, nil
 }

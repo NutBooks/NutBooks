@@ -30,6 +30,28 @@ definitions:
       message:
         type: string
     type: object
+  models.AddUserRequest:
+    properties:
+      email:
+        example: ""
+        maxLength: 50
+        minLength: 5
+        type: string
+      name:
+        example: ""
+        maxLength: 50
+        minLength: 1
+        type: string
+      password:
+        example: 비밀번호는 영문 + 숫자 8-12자리
+        maxLength: 12
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
   models.AddUserResponse:
     properties:
       data: {}
@@ -87,6 +109,22 @@ definitions:
       message:
         type: string
     type: object
+  models.LogInRequest:
+    properties:
+      email:
+        example: ""
+        maxLength: 50
+        minLength: 5
+        type: string
+      password:
+        example: 비밀번호는 영문 + 숫자 8-12자리
+        maxLength: 12
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
   models.LogInResponse:
     properties:
       data: {}
@@ -125,20 +163,12 @@ paths:
     post:
       description: 비밀번호는 영문 + 숫자 8-12자리
       parameters:
-      - example: ""
-        in: formData
-        maxLength: 50
-        minLength: 5
-        name: email
+      - description: body params
+        in: body
+        name: params
         required: true
-        type: string
-      - example: 비밀번호는 영문 + 숫자 8-12자리
-        in: formData
-        maxLength: 12
-        minLength: 8
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.LogInRequest'
       produces:
       - application/json
       responses:
@@ -148,6 +178,14 @@ paths:
             $ref: '#/definitions/models.LogInResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.LogInResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.LogInResponse'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.LogInResponse'
       summary: 로그인 API
@@ -280,27 +318,12 @@ paths:
       - user
     post:
       parameters:
-      - example: ""
-        in: formData
-        maxLength: 50
-        minLength: 5
-        name: email
+      - description: params
+        in: body
+        name: params
         required: true
-        type: string
-      - example: ""
-        in: formData
-        maxLength: 50
-        minLength: 1
-        name: name
-        required: true
-        type: string
-      - example: 비밀번호는 영문 + 숫자 8-12자리
-        in: formData
-        maxLength: 12
-        minLength: 8
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.AddUserRequest'
       produces:
       - application/json
       responses:

@@ -28,8 +28,8 @@ type (
 
 type (
 	LogInRequest struct {
-		Email    string `validate:"required,min=5,max=50,email" json:"email" example:""`
-		Password string `validate:"required,min=8,max=12,alphanum" json:"password" example:"비밀번호는 영문 + 숫자 8-12자리"`
+		Email    string `validate:"required,min=5,max=50,email" json:"email" form:"email" example:""`
+		Password string `validate:"required,min=8,max=12,alphanum" json:"password" form:"password" example:"비밀번호는 영문 + 숫자 8-12자리"`
 	}
 
 	LogInResponse struct {

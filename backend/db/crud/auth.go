@@ -4,6 +4,7 @@ import (
 	conn "api/db"
 	"api/db/models"
 	"errors"
+	"gorm.io/gorm"
 )
 
 func AddAuthentication(authentication *models.Authentication) (*models.Authentication, error) {
@@ -40,4 +41,23 @@ func AddPasswordByUserId(password *models.Password) (*models.Password, error) {
 	}
 
 	return password, nil
+}
+
+func GetPasswordByUserId(id uint) (*models.Password, error) {
+	db, err := conn.GetDB()
+	if err != nil {
+		return nil, err
+	}
+
+	found := &models.Password{}
+	result := db.Where("user_id = ?", id).First(found)
+	if result == nil {
+		return nil, errors.New("Cannot find this password")
+	}
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	return found, nil
 }

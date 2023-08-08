@@ -38,9 +38,9 @@ type (
 
 type (
 	AddUserRequest struct {
-		Name     string `validate:"required,min=1,max=50" json:"name" example:""`
-		Email    string `validate:"required,min=5,max=50,email" json:"email" example:""`
-		Password string `validate:"required,min=8,max=12,alphanum" json:"password" example:"비밀번호는 영문 + 숫자 8-12자리"`
+		Name     string `validate:"required,min=1,max=50" json:"name" form:"name" example:""`
+		Email    string `validate:"required,min=5,max=50,email" json:"email" form:"email" example:""`
+		Password string `validate:"required,min=8,max=12,alphanum" json:"password" form:"password" example:"비밀번호는 영문 + 숫자 8-12자리"`
 	}
 
 	AddUserResponse struct {

@@ -13,14 +13,20 @@ import (
 //	@Description	비밀번호는 영문 + 숫자 8-12자리
 //	@Tags			auth
 //	@Produce		json
-//	@Param			params	formData	models.LogInRequest	true	"formData"
+//	@Param			params	body		models.LogInRequest	true	"body params"
 //	@Success		200		{object}	models.LogInResponse{}
 //	@Failure		400		{object}	models.LogInResponse{}
+//	@Failure		401		{object}	models.LogInResponse{}
+//	@Failure		500		{object}	models.LogInResponse{}
 //	@Router			/api/v1/auth/login/ [post]
 func LogInHandler(c *fiber.Ctx) error {
-	params := &models.LogInRequest{
-		Email:    c.FormValue("email"),
-		Password: c.FormValue("password"),
+	params := &models.LogInRequest{}
+	if err := c.BodyParser(params); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
 	}
 
 	validator := &utils.Validator{}
@@ -33,7 +39,7 @@ func LogInHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	found, err := crud.GetUserIdByEmail(params.Email)
+	user, err := crud.GetUserByEmail(params.Email)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.LogInResponse{
 			Error:   true,
@@ -42,7 +48,7 @@ func LogInHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = crud.GetUserById(found.ID)
+	password, err := crud.GetPasswordByUserId(user.ID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.LogInResponse{
 			Error:   true,
@@ -51,7 +57,13 @@ func LogInHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// auth.Password 체크 필요
+	if params.Password != password.Password {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.LogInResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(models.LogInResponse{
 		Error:   false,
