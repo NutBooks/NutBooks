@@ -4,7 +4,6 @@ import (
 	"api/app/utils"
 	"api/db/crud"
 	"api/db/models"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,20 +12,18 @@ import (
 //	@Summary	새 유저를 추가하는 API
 //	@Tags		user
 //	@Produce	json
-//	@Param		params	body		models.AddUserRequest	true	"body params"
+//	@Param		params	body		models.AddUserRequest	true	"params"
 //	@Success	200		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user/ [post]
 func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
-
-	err := c.BodyParser(params)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
+	if err := c.BodyParser(params); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
+			Data:    err,
 		})
 	}
 
@@ -40,12 +37,43 @@ func AddUserHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	// 이메일 중복 확인 로직을 추가하든, 이메일 중복 시 user create를 rollback 하든
+	// 로릭 추가 필요
+
 	user := &models.User{
 		Name:      params.Name,
 		Authority: models.AuthorityNone,
 	}
 
-	err = crud.AddUser(user)
+	user, err := crud.AddUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	authentication := &models.Authentication{
+		UserID: user.ID,
+		Email:  params.Email,
+	}
+
+	authentication, err = crud.AddAuthentication(authentication)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	password := &models.Password{
+		UserID:   user.ID,
+		Password: params.Password,
+	}
+
+	password, err = crud.AddPasswordByUserId(password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,

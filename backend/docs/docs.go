@@ -29,6 +29,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/auth/login/": {
+            "post": {
+                "description": "비밀번호는 영문 + 숫자 8-12자리",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "로그인 API",
+                "parameters": [
+                    {
+                        "description": "body params",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/bookmark/": {
             "get": {
                 "produces": [
@@ -248,7 +297,7 @@ const docTemplate = `{
                 "summary": "새 유저를 추가하는 API",
                 "parameters": [
                     {
-                        "description": "body params",
+                        "description": "params",
                         "name": "params",
                         "in": "body",
                         "required": true,
@@ -394,7 +443,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "name"
+                "name",
+                "password"
             ],
             "properties": {
                 "email": {
@@ -408,6 +458,12 @@ const docTemplate = `{
                     "maxLength": 50,
                     "minLength": 1,
                     "example": ""
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 12,
+                    "minLength": 8,
+                    "example": "비밀번호는 영문 + 숫자 8-12자리"
                 }
             }
         },
@@ -486,6 +542,39 @@ const docTemplate = `{
             }
         },
         "models.GetUserByIdResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LogInRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 5,
+                    "example": ""
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 12,
+                    "minLength": 8,
+                    "example": "비밀번호는 영문 + 숫자 8-12자리"
+                }
+            }
+        },
+        "models.LogInResponse": {
             "type": "object",
             "properties": {
                 "data": {},

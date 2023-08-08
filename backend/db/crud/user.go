@@ -7,25 +7,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddUser(user *models.User) error {
+func AddUser(user *models.User) (*models.User, error) {
 	db, err := conn.GetDB()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	result := db.Create(user)
 	if result == nil {
-		return errors.New("Failed to create this user")
+		return nil, errors.New("Failed to create this user")
 	}
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
-	return nil
+	return user, nil
 }
 
-func GetUserById(id int) (*models.User, error) {
+func GetUserById(id uint) (*models.User, error) {
 	db, err := conn.GetDB()
 	if err != nil {
 		return nil, err
@@ -63,4 +63,33 @@ func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
 	}
 
 	return found, nil
+}
+
+func GetUserByEmail(email string) (*models.User, error) {
+	db, err := conn.GetDB()
+	if err != nil {
+		return nil, err
+	}
+
+	found := &models.Authentication{}
+	result := db.Where("email = ?", email).First(&found)
+	if result == nil {
+		return nil, errors.New("Cannot find this user")
+	}
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	user := &models.User{}
+	result = db.First(user, found.UserID)
+	if result == nil {
+		return nil, errors.New("Cannot find this user")
+	}
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	return user, nil
 }
