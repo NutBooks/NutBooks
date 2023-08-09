@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Pretendard-Bold';
+  src:
+    url('/font/Pretendard-Bold.ttf') format('truetype'),
+    local('Pretendard-Bold');
+}
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src:
+    url('/font/Pretendard-Regular.ttf') format('truetype'),
+    local('Pretendard-Regular');
+}
+@font-face {
+  font-family: 'Pretendard-ExtraBold';
+  src:
+    url('/font/Pretendard-ExtraBold.ttf') format('truetype'),
+    local('Pretendard-SemiBold');
+}
