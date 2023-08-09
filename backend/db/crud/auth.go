@@ -8,12 +8,7 @@ import (
 )
 
 func AddAuthentication(authentication *models.Authentication) (*models.Authentication, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
-	result := db.Create(authentication)
+	result := conn.DB.Create(authentication)
 	if result == nil {
 		return nil, errors.New("Failed to create this authentication")
 	}
@@ -26,12 +21,7 @@ func AddAuthentication(authentication *models.Authentication) (*models.Authentic
 }
 
 func AddPasswordByUserId(password *models.Password) (*models.Password, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
-	result := db.Create(password)
+	result := conn.DB.Create(password)
 	if result == nil {
 		return nil, errors.New("Failed to create this password")
 	}
@@ -44,13 +34,8 @@ func AddPasswordByUserId(password *models.Password) (*models.Password, error) {
 }
 
 func GetPasswordByUserId(id uint) (*models.Password, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
 	found := &models.Password{}
-	result := db.Where("user_id = ?", id).First(found)
+	result := conn.DB.Where("user_id = ?", id).First(found)
 	if result == nil {
 		return nil, errors.New("Cannot find this password")
 	}

@@ -11,7 +11,7 @@ import (
 	"api/app/middlewares"
 	"api/app/routes"
 	"api/configs"
-	"api/db"
+	conn "api/db"
 	"log"
 	"os"
 	"os/signal"
@@ -27,7 +27,7 @@ import (
 func Setup() *fiber.App {
 	config := configs.FiberConfig()
 
-	db.MigrateMysql()
+	conn.Connect()
 
 	app := fiber.New(config)
 	middlewares.FiberMiddleware(app)
