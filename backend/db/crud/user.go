@@ -8,12 +8,7 @@ import (
 )
 
 func AddUser(user *models.User) (*models.User, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
-	result := db.Create(user)
+	result := conn.DB.Create(user)
 	if result == nil {
 		return nil, errors.New("Failed to create this user")
 	}
@@ -26,13 +21,8 @@ func AddUser(user *models.User) (*models.User, error) {
 }
 
 func GetUserById(id uint) (*models.User, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
 	found := &models.User{}
-	result := db.First(found, id)
+	result := conn.DB.First(found, id)
 	if result == nil {
 		return nil, errors.New("Cannot find this user")
 	}
@@ -45,17 +35,12 @@ func GetUserById(id uint) (*models.User, error) {
 }
 
 func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
 	var found []models.User
 	var result *gorm.DB
 	if params.Limit == 0 && params.Offset == 0 {
-		result = db.Find(&found)
+		result = conn.DB.Find(&found)
 	} else {
-		result = db.Limit(params.Limit).Offset(params.Offset).Find(&found)
+		result = conn.DB.Limit(params.Limit).Offset(params.Offset).Find(&found)
 	}
 
 	if result == nil {
@@ -66,13 +51,8 @@ func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
 }
 
 func GetUserByEmail(email string) (*models.User, error) {
-	db, err := conn.GetDB()
-	if err != nil {
-		return nil, err
-	}
-
 	found := &models.Authentication{}
-	result := db.Where("email = ?", email).First(&found)
+	result := conn.DB.Where("email = ?", email).First(&found)
 	if result == nil {
 		return nil, errors.New("Cannot find this user")
 	}
@@ -82,7 +62,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 
 	user := &models.User{}
-	result = db.First(user, found.UserID)
+	result = conn.DB.First(user, found.UserID)
 	if result == nil {
 		return nil, errors.New("Cannot find this user")
 	}

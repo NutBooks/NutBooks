@@ -6,14 +6,14 @@ import (
 )
 
 func MigrateMysql() {
-	db, err := GetDB()
-
-	err = db.AutoMigrate(
+	err := DB.AutoMigrate(
 		&models.User{}, &models.Profile{}, &models.Authority{}, &models.Authentication{},
 		&models.SocialLogin{}, &models.Password{}, &models.Cidi{},
 		&models.Bookmark{}, &models.Keyword{},
 	)
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Cannot migrate DB: %v", err)
 	}
+
+	log.Println("Successfully migrated")
 }
