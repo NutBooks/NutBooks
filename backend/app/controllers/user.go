@@ -60,7 +60,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 		UserID: user.ID,
 		Email:  params.Email,
 	}
-	authentication, err = crud.AddAuthentication(authentication)
+	authentication, err = crud.AddAuthenticationByUserId(authentication)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
