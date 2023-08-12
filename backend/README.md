@@ -37,6 +37,12 @@ docker compose up -d db; docker compose logs -f --tail=1000 db
 $ ./bin/main migrate
 ```
 
+- fiber 컨테이너에서 mysql 컨테이너 접속 되는지 확인
+  ```shell
+  apk add mysql-client mariadb-connector-c
+  mysql --host=$MYSQL_HOST --port=$MYSQL_PORT --user=$MYSQL_USER --password=$MYSQL_PASSWORD $MYSQL_DATABASE
+  ```
+
 ## 서버 실행
 
 ```bash
