@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"api/app/middlewares"
 	"api/configs"
+	conn "api/db"
+	"api/db/crud"
 	"api/db/models"
 	"bytes"
 	"encoding/json"
@@ -14,242 +17,292 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func TestAddUser(t *testing.T) {
+var (
+	app       *fiber.App
+	testUser1 *models.User
+)
+
+func prepareApp(t *testing.T) {
 	config := configs.FiberConfig()
-	app := fiber.New(config)
+	conn.Connect()
+	app = fiber.New(config)
+	middlewares.FiberMiddleware(app)
+
 	route := app.Group("/api/v1")
 
 	// User
 	user := route.Group("/user")
 	user.Post("/", AddUserHandler)
+	user.Get("/:id/", GetUserByIdHandler)
+	user.Get("/", GetAllUsersHandler)
+}
 
+func prepareTestUser(t *testing.T) {
+	testUser1, _ = crud.AddUser(&models.User{
+		Name:      "testUserController",
+		Authority: models.AuthorityNone,
+	})
+}
+
+func TestUserController(t *testing.T) {
 	t.Helper()
+	prepareApp(t)
+	prepareTestUser(t)
 
+	t.Run("testAddUserHandler", testAddUserHandler)
+	t.Run("testGetUserByIdHandler", testGetUserByIdHandler)
+	t.Run("testGetAllUsersHandler", testGetAllUsersHandler)
+}
+
+func testAddUserHandler(t *testing.T) {
 	testCases := []struct {
-		description   string
-		method        string
-		route         string
-		body          models.AddUserRequest
-		expectedError bool
-		expectedCode  int
-		expectedBody  string
+		name            string
+		method          string
+		route           string
+		body            models.AddUserRequest
+		expectedError   bool
+		expectedCode    int
+		expectedMessage string
 	}{
 		{
-			description: "create user",
-			method:      "POST",
-			route:       "/api/v1/user/",
+			name:   "Add  user -> success",
+			method: "POST",
+			route:  "/api/v1/user/",
 			body: models.AddUserRequest{
 				Name:     "tester1",
 				Email:    "tester1@example.com",
 				Password: "tester1pw1",
 			},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 		{
-			description: "create user without name and email -> error",
-			method:      "POST",
-			route:       "/api/v1/user/",
+			name:   "Add user without name and email -> fail",
+			method: "POST",
+			route:  "/api/v1/user/",
 			body: models.AddUserRequest{
 				Name:     "",
 				Email:    "",
 				Password: "tester2pw1",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
-			expectedBody:  "Name is required",
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Name is required",
 		},
 		{
-			description: "create user without name -> error",
-			method:      "POST",
-			route:       "/api/v1/user/",
+			name:   "Add user without name -> fail",
+			method: "POST",
+			route:  "/api/v1/user/",
 			body: models.AddUserRequest{
 				Name:     "",
 				Email:    "tester3@example.com",
 				Password: "tester3pw1",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
-			expectedBody:  "Name is required",
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Name is required",
 		},
 		{
-			description: "create user without email -> error",
-			method:      "POST",
-			route:       "/api/v1/user/",
+			name:   "Add user without email -> fail",
+			method: "POST",
+			route:  "/api/v1/user/",
 			body: models.AddUserRequest{
 				Name:     "tester4",
 				Email:    "",
 				Password: "tester4pw1",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
-			expectedBody:  "Email is required",
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Email is required",
 		},
 		{
-			description: "create user with wrong email format -> error",
-			method:      "POST",
-			route:       "/api/v1/user/",
+			name:   "Add user with wrong email format -> fail",
+			method: "POST",
+			route:  "/api/v1/user/",
 			body: models.AddUserRequest{
 				Name:     "tester5",
 				Email:    "tester5email",
 				Password: "tester5pw1",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
-			expectedBody:  "Wrong email format",
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Wrong email format",
 		},
 		{
-			description: "create user with wrong password format -> error",
-			method:      "POST",
-			route:       "/api/v1/user/",
+			name:   "Add user with wrong password format -> fail",
+			method: "POST",
+			route:  "/api/v1/user/",
 			body: models.AddUserRequest{
 				Name:     "tester5",
 				Email:    "tester5email",
 				Password: "pw1",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
-			expectedBody:  "Validation failed",
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
 		},
 	}
 
-	for i, tt := range testCases {
-		t.Log("Case #", i, ": ", tt)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			err := json.NewEncoder(buf).Encode(tt.body)
+			require.NoError(t, err)
+			t.Log("buf: ", buf)
 
-		buf := &bytes.Buffer{}
-		err := json.NewEncoder(buf).Encode(tt.body)
-		require.NoError(t, err)
+			req := httptest.NewRequest(tt.method, tt.route, buf)
+			req.Header.Set("Content-Type", "application/json")
+			t.Log("req: ", req)
 
-		req := httptest.NewRequest(tt.method, tt.route, buf)
-		req.Header.Set("Content-Type", "application/json")
-		t.Log("Case #", i, ": req: ", req)
+			resp, err := app.Test(req, -1)
+			t.Log("resp: ", resp)
+			require.NoError(t, err)
 
-		resp, err := app.Test(req, -1)
-		t.Log("Case #", i, ": resp: ", resp)
-		require.NoError(t, err)
+			result := &models.AddUserResponse{}
+			err = json.NewDecoder(resp.Body).Decode(result)
+			require.NoError(t, err)
 
-		result := &models.AddUserResponse{}
-		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err)
-
-		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+		})
 	}
 }
 
-func TestGetUserById(t *testing.T) {
-	config := configs.FiberConfig()
-	app := fiber.New(config)
-	route := app.Group("/api/v1")
-
-	// User
-	user := route.Group("/user")
-	user.Get("/:id/", GetUserByIdHandler)
-
-	t.Helper()
-
+func testGetUserByIdHandler(t *testing.T) {
 	testCases := []struct {
-		description   string
-		method        string
-		route         string
-		body          models.GetUserByIdRequest
-		expectedError bool
-		expectedCode  int
-		expectedBody  string
+		name            string
+		method          string
+		route           string
+		body            models.GetUserByIdRequest
+		expectedError   bool
+		expectedCode    int
+		expectedMessage string
 	}{
 		{
-			description: "Get user",
-			method:      "GET",
-			route:       "/api/v1/user/",
+			name:   "Get user of testUser1 using testUser1.ID -> success",
+			method: "GET",
+			route:  "/api/v1/user/",
 			body: models.GetUserByIdRequest{
-				ID: 1,
+				ID: testUser1.ID,
 			},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
+		},
+		{
+			name:   "Get not existing user -> fail",
+			method: "GET",
+			route:  "/api/v1/user/",
+			body: models.GetUserByIdRequest{
+				ID: 464749,
+			},
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "record not found",
 		},
 	}
 
-	for i, tt := range testCases {
-		t.Log("Case #", i, ": ", tt)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			err := json.NewEncoder(buf).Encode(tt.body)
+			require.NoError(t, err)
+			t.Log("buf: ", buf)
 
-		buf := &bytes.Buffer{}
-		err := json.NewEncoder(buf).Encode(tt.body)
-		require.NoError(t, err)
+			req := httptest.NewRequest(tt.method, fmt.Sprintf("%s%d", tt.route, tt.body.ID), buf)
+			req.Header.Set("Content-Type", "application/json")
+			t.Log("req: ", req)
 
-		req := httptest.NewRequest(tt.method, fmt.Sprintf("%s%d", tt.route, tt.body.ID), buf)
-		req.Header.Set("Content-Type", "application/json")
-		t.Log("Case #", i, ": req: ", req)
+			resp, err := app.Test(req, -1)
+			t.Log("resp: ", resp)
+			require.NoError(t, err)
 
-		resp, err := app.Test(req, -1)
-		t.Log("Case #", i, ": resp: ", resp)
-		require.NoError(t, err)
+			result := &models.GetUserByIdResponse{}
+			err = json.NewDecoder(resp.Body).Decode(result)
+			require.NoError(t, err)
 
-		result := &models.GetUserByIdResponse{}
-		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err)
-
-		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+		})
 	}
 }
 
-func TestGetAllUsers(t *testing.T) {
-	config := configs.FiberConfig()
-	app := fiber.New(config)
-	route := app.Group("/api/v1")
-
-	// User
-	user := route.Group("/user")
-	user.Get("/", GetAllUsersHandler)
-
-	t.Helper()
-
+func testGetAllUsersHandler(t *testing.T) {
 	testCases := []struct {
-		description   string
-		method        string
-		route         string
-		body          models.GetAllUsersRequest
-		expectedError bool
-		expectedCode  int
-		expectedBody  string
+		name            string
+		method          string
+		route           string
+		body            models.GetAllUsersRequest
+		expectedError   bool
+		expectedCode    int
+		expectedMessage string
 	}{
 		{
-			description:   "Get all users",
-			method:        "GET",
-			route:         "/api/v1/user/",
-			body:          models.GetAllUsersRequest{},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			name:            "Get all users -> success",
+			method:          "GET",
+			route:           "/api/v1/user/",
+			body:            models.GetAllUsersRequest{},
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 		{
-			description: "Get all users",
-			method:      "GET",
-			route:       "/api/v1/user/",
+			name:   "Get all users using negative offset value -> fail",
+			method: "GET",
+			route:  "/api/v1/user/",
 			body: models.GetAllUsersRequest{
 				Offset: -1,
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
+		},
+		{
+			name:   "Get all users using negative limit value -> fail",
+			method: "GET",
+			route:  "/api/v1/user/",
+			body: models.GetAllUsersRequest{
+				Limit: -1,
+			},
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
+		},
+		{
+			name:   "Get all users using offset and limit value -> success",
+			method: "GET",
+			route:  "/api/v1/user/",
+			body: models.GetAllUsersRequest{
+				Offset: int(testUser1.ID),
+				Limit:  1,
+			},
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 	}
 
-	for i, tt := range testCases {
-		t.Log("Case #", i, ": ", tt)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(
+				tt.method,
+				fmt.Sprintf("%s?offset=%d&limit=%d", tt.route, tt.body.Offset, tt.body.Limit),
+				nil,
+			)
+			req.Header.Set("Content-Type", "application/json")
+			t.Log("req: ", req)
 
-		req := httptest.NewRequest(
-			tt.method,
-			fmt.Sprintf("%s?offset=%d&limit=%d", tt.route, tt.body.Offset, tt.body.Limit),
-			nil,
-		)
-		req.Header.Set("Content-Type", "application/json")
-		t.Log("Case #", i, ": req: ", req)
+			resp, err := app.Test(req, -1)
+			t.Log("resp: ", resp)
+			require.NoError(t, err)
 
-		resp, err := app.Test(req, -1)
-		t.Log("Case #", i, ": resp: ", resp)
-		require.NoError(t, err)
+			result := &models.GetAllUsersResponse{}
+			err = json.NewDecoder(resp.Body).Decode(result)
+			require.NoError(t, err)
 
-		result := &models.GetAllUsersResponse{}
-		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err)
-
-		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+		})
 	}
 }
