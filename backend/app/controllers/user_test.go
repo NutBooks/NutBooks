@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"api/app/middlewares"
-	"api/configs"
-	conn "api/db"
 	"api/db/crud"
 	"api/db/models"
 	"bytes"
@@ -13,41 +10,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 var (
-	app       *fiber.App
 	testUser1 *models.User
 )
 
-func prepareApp(t *testing.T) {
-	config := configs.FiberConfig()
-	conn.Connect()
-	app = fiber.New(config)
-	middlewares.FiberMiddleware(app)
-
-	route := app.Group("/api/v1")
-
-	// User
-	user := route.Group("/user")
-	user.Post("/", AddUserHandler)
-	user.Get("/:id/", GetUserByIdHandler)
-	user.Get("/", GetAllUsersHandler)
-}
-
-func prepareTestUser(t *testing.T) {
+func testUserController(t *testing.T) {
+	// prepare test user
 	testUser1, _ = crud.AddUser(&models.User{
 		Name:      "testUserController",
 		Authority: models.AuthorityNone,
 	})
-}
-
-func TestUserController(t *testing.T) {
-	t.Helper()
-	prepareApp(t)
-	prepareTestUser(t)
 
 	t.Run("testAddUserHandler", testAddUserHandler)
 	t.Run("testGetUserByIdHandler", testGetUserByIdHandler)
