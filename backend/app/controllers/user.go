@@ -5,6 +5,7 @@ import (
 	"api/db/crud"
 	"api/db/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // AddUserHandler
@@ -36,6 +37,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func AddUserHandler]", "params", params)
 
 	// 이메일 중복 확인 로직을 추가하든, 이메일 중복 시 user create를 rollback 하든
 	// 로릭 추가 필요
@@ -44,7 +46,6 @@ func AddUserHandler(c *fiber.Ctx) error {
 		Name:      params.Name,
 		Authority: models.AuthorityNone,
 	}
-
 	user, err := crud.AddUser(user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
@@ -53,12 +54,12 @@ func AddUserHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func AddUserHandler]", "user", user)
 
 	authentication := &models.Authentication{
 		UserID: user.ID,
 		Email:  params.Email,
 	}
-
 	authentication, err = crud.AddAuthentication(authentication)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
@@ -67,12 +68,12 @@ func AddUserHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func AddUserHandler]", "authentication", authentication)
 
 	password := &models.Password{
 		UserID:   user.ID,
 		Password: params.Password,
 	}
-
 	password, err = crud.AddPasswordByUserId(password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
@@ -81,6 +82,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func AddUserHandler]", "password", password)
 
 	return c.Status(fiber.StatusOK).JSON(models.AddUserResponse{
 		Error:   false,
@@ -101,7 +103,6 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Router		/api/v1/user/{id}/ [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
-
 	err := c.ParamsParser(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
@@ -120,6 +121,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func GetUserByIdHandler]", "params", params)
 
 	found, err := crud.GetUserById(params.ID)
 	if err != nil {
@@ -129,6 +131,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func GetUserByIdHandler]", "found", found)
 
 	return c.Status(fiber.StatusOK).JSON(models.GetUserByIdResponse{
 		Error:   false,
@@ -169,6 +172,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func GetAllUsersHandler]", "params", params)
 
 	found, err := crud.GetAllUsers(params)
 	if err != nil {
@@ -178,6 +182,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func GetAllUsersHandler]", "found", found)
 
 	return c.Status(fiber.StatusOK).JSON(models.GetAllUsersResponse{
 		Error:   false,
