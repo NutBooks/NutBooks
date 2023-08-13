@@ -13,7 +13,6 @@ definitions:
         example: https://cheesecat47.github.io
         type: string
       title:
-        minLength: 1
         type: string
       user_id:
         minimum: 1

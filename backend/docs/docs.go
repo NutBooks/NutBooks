@@ -418,8 +418,7 @@ const docTemplate = `{
                     "example": "https://cheesecat47.github.io"
                 },
                 "title": {
-                    "type": "string",
-                    "minLength": 1
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "integer",
