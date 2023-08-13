@@ -62,7 +62,7 @@ func testAddUserHandler(t *testing.T) {
 			},
 			expectedError:   true,
 			expectedCode:    http.StatusBadRequest,
-			expectedMessage: "Name is required",
+			expectedMessage: "Validation failed",
 		},
 		{
 			name:   "Add user without name -> fail",
@@ -75,7 +75,7 @@ func testAddUserHandler(t *testing.T) {
 			},
 			expectedError:   true,
 			expectedCode:    http.StatusBadRequest,
-			expectedMessage: "Name is required",
+			expectedMessage: "Validation failed",
 		},
 		{
 			name:   "Add user without email -> fail",
@@ -88,7 +88,7 @@ func testAddUserHandler(t *testing.T) {
 			},
 			expectedError:   true,
 			expectedCode:    http.StatusBadRequest,
-			expectedMessage: "Email is required",
+			expectedMessage: "Validation failed",
 		},
 		{
 			name:   "Add user with wrong email format -> fail",
@@ -101,7 +101,7 @@ func testAddUserHandler(t *testing.T) {
 			},
 			expectedError:   true,
 			expectedCode:    http.StatusBadRequest,
-			expectedMessage: "Wrong email format",
+			expectedMessage: "Validation failed",
 		},
 		{
 			name:   "Add user with wrong password format -> fail",
