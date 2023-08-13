@@ -29,6 +29,12 @@ func controllersTestApp(t *testing.T) {
 	// Auth router
 	auth := route.Group("/auth")
 	auth.Post("/login/", LogInHandler)
+
+	// bookmark
+	bookmark := route.Group("/bookmark")
+	bookmark.Post("/", AddBookmarkHandler)
+	bookmark.Get("/:id/", GetBookmarkByIdHandler)
+	bookmark.Get("/", GetAllBookmarksHandler)
 }
 
 func TestControllers(t *testing.T) {
@@ -37,4 +43,5 @@ func TestControllers(t *testing.T) {
 
 	t.Run("testUserController", testUserController)
 	t.Run("testAuthenticationController", testAuthenticationController)
+	t.Run("testBookmarkController", testBookmarkController)
 }

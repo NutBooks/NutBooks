@@ -26,7 +26,7 @@ type (
 	}
 
 	GetBookmarkByIdRequest struct {
-		ID int `validate:"required,number,min=1" json:"id"`
+		ID uint `validate:"required,number,min=1" json:"bookmark_id"`
 	}
 
 	GetBookmarkByIdResponse struct {

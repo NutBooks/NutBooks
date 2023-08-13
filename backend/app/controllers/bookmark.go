@@ -10,7 +10,7 @@ import (
 
 // AddBookmarkHandler
 //
-//	@Summary		북마크를 DB에 추가하는 API
+//	@Summary		특정 유저가 북마크를 DB에 추가하는 API
 //	@Description	새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
 //	@Tags			bookmark
 //	@Accept			json
@@ -68,7 +68,7 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 
 // GetBookmarkByIdHandler
 //
-//	@Summary	ID를 사용해 북마크 1개 정보 읽기
+//	@Summary	특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환
 //	@Tags		bookmark
 //	@Produce	json
 //	@Param		id	path		uint	true	"Bookmark ID"
@@ -116,7 +116,7 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 
 // GetAllBookmarksHandler
 //
-//	@Summary	offset부터 limit까지 북마크 목록을 반환
+//	@Summary	특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환
 //	@Tags		bookmark
 //	@Produce	json
 //	@Param		offset	query		int	false	"limit과 offset은 같이 입력해야 합니다"
