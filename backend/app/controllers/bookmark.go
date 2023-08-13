@@ -5,6 +5,7 @@ import (
 	"api/db/crud"
 	"api/db/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // AddBookmarkHandler
@@ -23,13 +24,12 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 	// Check user permissions to create a new bookmark
 
 	params := &models.AddBookmarkRequest{}
-
 	err := c.BodyParser(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
+			Data:    err,
 		})
 	}
 
@@ -42,14 +42,14 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func AddBookmarkHandler]", "params", params)
 
 	bookmark := &models.Bookmark{
 		UserID: params.UserID,
 		Title:  params.Title,
 		Link:   params.Link,
 	}
-
-	err = crud.AddBookmark(bookmark)
+	bookmark, err = crud.AddBookmark(bookmark)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
@@ -57,6 +57,7 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func AddBookmarkHandler]", "bookmark", bookmark)
 
 	return c.Status(fiber.StatusOK).JSON(models.AddBookmarkResponse{
 		Error:   false,
@@ -75,9 +76,8 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 //	@Failure	400	{object}	models.GetBookmarkByIdResponse{}
 //	@Router		/api/v1/bookmark/{id}/ [get]
 func GetBookmarkByIdHandler(c *fiber.Ctx) error {
-	param := models.Bookmark{}
-
-	err := c.ParamsParser(&param)
+	params := models.Bookmark{}
+	err := c.ParamsParser(&params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
 			Error:   true,
@@ -86,7 +86,18 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	found, err := crud.GetBookmarkById(param.ID)
+	validator := &utils.Validator{}
+	validateError := validator.Validate(params)
+	if validateError != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
+			Error:   true,
+			Data:    validateError,
+			Message: "Validation failed",
+		})
+	}
+	log.Infow("[func GetBookmarkByIdHandler]", "params", params)
+
+	found, err := crud.GetBookmarkById(params.ID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
 			Error:   true,
@@ -94,6 +105,7 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func GetBookmarkByIdHandler]", "found", found)
 
 	return c.Status(fiber.StatusOK).JSON(models.GetBookmarkByIdResponse{
 		Error:   false,
@@ -132,6 +144,7 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func GetAllBookmarksHandler]", "params", params)
 
 	found, err := crud.GetAllBookmarks(params)
 	if err != nil {
@@ -141,6 +154,7 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func GetAllBookmarksHandler]", "found", found)
 
 	return c.Status(fiber.StatusOK).JSON(models.GetAllBookmarksResponse{
 		Error:   false,
