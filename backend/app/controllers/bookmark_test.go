@@ -1,233 +1,267 @@
 package controllers
 
 import (
-	"api/configs"
+	"api/db/crud"
 	"api/db/models"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
-func TestAddBookmark(t *testing.T) {
-	config := configs.FiberConfig()
-	app := fiber.New(config)
-	route := app.Group("/api/v1")
+var (
+	testUser2 *models.User
+	bookmark1 *models.Bookmark
+)
 
-	// bookmark
-	bookmark := route.Group("/bookmark")
-	bookmark.Post("/", AddBookmarkHandler)
+func testBookmarkController(t *testing.T) {
+	// prepare test user
+	testUser2, _ = crud.AddUser(&models.User{
+		Name:      "testerBookmark",
+		Authority: models.AuthorityNone,
+	})
 
-	t.Helper()
+	bookmark1, _ = crud.AddBookmark(&models.Bookmark{
+		UserID: testUser2.ID,
+		Title:  "Bookmark Test Title 1",
+		Link:   "https://cheesecat47.github.io/",
+	})
 
+	t.Run("testAddBookmarkHandler", testAddBookmarkHandler)
+	t.Run("testGetBookmarkByIdHandler", testGetBookmarkByIdHandler)
+	t.Run("testGetAllBookmarksHandler", testGetAllBookmarksHandler)
+}
+
+func testAddBookmarkHandler(t *testing.T) {
 	testCases := []struct {
-		description   string
-		method        string
-		route         string
-		body          models.AddBookmarkRequest
-		expectedError bool
-		expectedCode  int
-		expectedBody  string
+		name            string
+		method          string
+		route           string
+		body            models.AddBookmarkRequest
+		expectedError   bool
+		expectedCode    int
+		expectedMessage string
 	}{
 		{
-			description: "case 0: without userId",
-			method:      "POST",
-			route:       "/api/v1/bookmark/",
+			name:   "Add bookmark -> success",
+			method: "POST",
+			route:  "/api/v1/bookmark/",
 			body: models.AddBookmarkRequest{
-				UserID: 1,
-				Title:  "bookmark_test case 0 title",
-				Link:   "https://cheesecat47.github.io/bookmark_test/case0/link",
-			},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
-			expectedBody:  "Success",
-		},
-		{
-			description: "case 1: without title",
-			method:      "POST",
-			route:       "/api/v1/bookmark/",
-			body: models.AddBookmarkRequest{
-				UserID: 1,
+				UserID: testUser2.ID,
+				Title:  "bookmark_test case 1 title",
 				Link:   "https://cheesecat47.github.io/bookmark_test/case1/link",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 		{
-			description: "case 2: without link - this should return error",
-			method:      "POST",
-			route:       "/api/v1/bookmark/",
+			name:   "Add bookmark without userId -> fail",
+			method: "POST",
+			route:  "/api/v1/bookmark/",
 			body: models.AddBookmarkRequest{
-				UserID: 1,
-				Title:  "bookmark_test case 2 title",
+				Title: "bookmark_test case 2 title",
+				Link:  "https://cheesecat47.github.io/bookmark_test/case2/link",
 			},
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
-			expectedBody:  "link is required parameter",
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
 		},
 		{
-			description: "case 3: without UserID",
-			method:      "POST",
-			route:       "/api/v1/bookmark/",
+			name:   "Add bookmark without title -> success",
+			method: "POST",
+			route:  "/api/v1/bookmark/",
 			body: models.AddBookmarkRequest{
-				Link: "https://cheesecat47.github.io/bookmark_test/case1/link",
+				UserID: testUser2.ID,
+				Link:   "https://cheesecat47.github.io/bookmark_test/case3/link",
 			},
-			expectedError: false,
-			expectedCode:  http.StatusBadRequest,
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
+		},
+		{
+			name:   "Add bookmark without link -> fail",
+			method: "POST",
+			route:  "/api/v1/bookmark/",
+			body: models.AddBookmarkRequest{
+				UserID: testUser2.ID,
+				Title:  "bookmark_test case 4 title",
+			},
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
 		},
 	}
 
-	for i, tt := range testCases {
-		t.Log("Case #", i, ": ", tt)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			err := json.NewEncoder(buf).Encode(tt.body)
+			require.NoError(t, err)
 
-		buf := &bytes.Buffer{}
-		err := json.NewEncoder(buf).Encode(tt.body)
-		require.NoError(t, err)
+			req := httptest.NewRequest(tt.method, tt.route, buf)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("UserID", strconv.Itoa(int(tt.body.UserID)))
+			t.Log("req: ", req)
 
-		req := httptest.NewRequest(tt.method, tt.route, buf)
-		req.Header.Set("Content-Type", "application/json")
-		t.Log("req: ", req)
+			resp, err := app.Test(req, -1)
+			t.Log("resp: ", resp)
+			require.NoError(t, err)
 
-		resp, err := app.Test(req, -1)
-		t.Log("resp: ", resp)
-		require.NoError(t, err)
+			result := &models.AddBookmarkResponse{}
+			err = json.NewDecoder(resp.Body).Decode(result)
+			require.NoError(t, err)
 
-		result := &models.AddBookmarkResponse{}
-		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err)
+			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+		})
 
-		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
 	}
 }
 
-func TestGetBookmarkById(t *testing.T) {
-	config := configs.FiberConfig()
-	app := fiber.New(config)
-	route := app.Group("/api/v1")
-
-	// bookmark
-	bookmark := route.Group("/bookmark")
-	bookmark.Get("/:id/", GetBookmarkByIdHandler)
-
-	t.Helper()
-
+func testGetBookmarkByIdHandler(t *testing.T) {
 	testCases := []struct {
-		description   string
-		method        string
-		route         string
-		body          models.GetBookmarkByIdRequest
-		expectedError bool
-		expectedCode  int
-		expectedBody  string
+		name            string
+		method          string
+		route           string
+		body            models.GetBookmarkByIdRequest
+		expectedError   bool
+		expectedCode    int
+		expectedMessage string
 	}{
 		{
-			description:   "case 0: get bookmark which index is 1. success",
-			method:        "GET",
-			route:         "/api/v1/bookmark/1/",
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			name:   "Get bookmark which index is 1 -> success",
+			method: "GET",
+			route:  "/api/v1/bookmark/",
+			body: models.GetBookmarkByIdRequest{
+				ID: bookmark1.ID,
+			},
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 		{
-			description:   "case 1: get bookmark which index is 0, fail",
-			method:        "GET",
-			route:         "/api/v1/bookmark/0/",
-			expectedError: true,
-			expectedCode:  http.StatusBadRequest,
+			name:   "Get bookmark which index not exists -> fail",
+			method: "GET",
+			route:  "/api/v1/bookmark/",
+			body: models.GetBookmarkByIdRequest{
+				ID: 0,
+			},
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "record not found",
 		},
 	}
 
-	for i, tt := range testCases {
-		t.Log("Case #", i, ": ", tt)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.method, fmt.Sprintf("%s%d", tt.route, tt.body.ID), nil)
+			req.Header.Set("Content-Type", "application/json")
+			t.Log("req: ", req)
 
-		req := httptest.NewRequest(tt.method, tt.route, nil)
-		req.Header.Set("Content-Type", "application/json")
-		t.Log("req: ", req)
+			resp, err := app.Test(req, -1)
+			t.Log("resp: ", resp)
+			require.NoError(t, err)
 
-		resp, err := app.Test(req, -1)
-		t.Log("resp: ", resp)
-		require.NoError(t, err)
+			result := &models.GetBookmarkByIdResponse{}
+			err = json.NewDecoder(resp.Body).Decode(result)
+			require.NoError(t, err)
 
-		result := &models.GetBookmarkByIdResponse{}
-		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err)
-
-		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+		})
 	}
 }
 
-func TestGetAllBookmarks(t *testing.T) {
-	config := configs.FiberConfig()
-	app := fiber.New(config)
-	route := app.Group("/api/v1")
-
-	// bookmark
-	bookmark := route.Group("/bookmark")
-	bookmark.Get("/", GetAllBookmarksHandler)
-
-	t.Helper()
-
+func testGetAllBookmarksHandler(t *testing.T) {
 	testCases := []struct {
-		description   string
-		method        string
-		route         string
-		body          models.GetAllBookmarksRequest
-		expectedError bool
-		expectedCode  int
-		expectedBody  string
+		name            string
+		method          string
+		route           string
+		body            models.GetAllBookmarksRequest
+		expectedError   bool
+		expectedCode    int
+		expectedMessage string
 	}{
 		{
-			description:   "case 0: get all bookmark",
-			method:        "GET",
-			route:         "/api/v1/bookmark/",
-			body:          models.GetAllBookmarksRequest{},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			name:            "Get all bookmark -> success",
+			method:          "GET",
+			route:           "/api/v1/bookmark/",
+			body:            models.GetAllBookmarksRequest{},
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 		{
-			description: "case 1: get bookmarks using limit and offset",
-			method:      "GET",
-			route:       "/api/v1/bookmark/",
+			name:   "Get all bookmarks with no offset -> success",
+			method: "GET",
+			route:  "/api/v1/bookmark/",
 			body: models.GetAllBookmarksRequest{
-				Offset: 0,
+				Limit: 1,
+			},
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
+		},
+		{
+			name:   "Get all bookmarks using negative offset value -> fail",
+			method: "GET",
+			route:  "/api/v1/bookmark/",
+			body: models.GetAllBookmarksRequest{
+				Offset: -1,
+			},
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
+		},
+		{
+			name:   "Get all bookmarks using negative limit value -> fail",
+			method: "GET",
+			route:  "/api/v1/bookmark/",
+			body: models.GetAllBookmarksRequest{
+				Limit: -1,
+			},
+			expectedError:   true,
+			expectedCode:    http.StatusBadRequest,
+			expectedMessage: "Validation failed",
+		},
+		{
+			name:   "Get all bookmarks using limit and offset -> success",
+			method: "GET",
+			route:  "/api/v1/bookmark/",
+			body: models.GetAllBookmarksRequest{
+				Offset: int(bookmark1.ID),
 				Limit:  1,
 			},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
-		},
-		{
-			description: "case 2: no offset",
-			method:      "GET",
-			route:       "/api/v1/bookmark/",
-			body: models.GetAllBookmarksRequest{
-				Limit: 2,
-			},
-			expectedError: false,
-			expectedCode:  http.StatusOK,
+			expectedError:   false,
+			expectedCode:    http.StatusOK,
+			expectedMessage: "Success",
 		},
 	}
 
-	for i, tt := range testCases {
-		t.Log("Case #", i, ": ", tt)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(
+				tt.method,
+				fmt.Sprintf("%s?offset=%d&limit=%d", tt.route, tt.body.Offset, tt.body.Limit),
+				nil)
+			req.Header.Set("Content-Type", "application/json")
+			t.Log("req: ", req)
 
-		req := httptest.NewRequest(
-			tt.method,
-			fmt.Sprintf("%s?offset=%d&limit=%d", tt.route, tt.body.Offset, tt.body.Limit),
-			nil)
-		req.Header.Set("Content-Type", "application/json")
-		t.Log("Case #", i, ": req: ", req)
+			resp, err := app.Test(req, -1)
+			t.Log("resp: ", resp)
+			require.NoError(t, err)
 
-		resp, err := app.Test(req, -1)
-		t.Log("resp: ", resp)
-		require.NoError(t, err)
+			result := &models.GetAllBookmarksResponse{}
+			err = json.NewDecoder(resp.Body).Decode(result)
+			require.NoError(t, err, result.Message)
 
-		result := &models.GetAllBookmarksResponse{}
-		err = json.NewDecoder(resp.Body).Decode(result)
-		require.NoError(t, err, result.Message)
-
-		require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+		})
 	}
 }

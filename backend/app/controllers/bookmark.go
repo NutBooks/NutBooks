@@ -5,11 +5,12 @@ import (
 	"api/db/crud"
 	"api/db/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // AddBookmarkHandler
 //
-//	@Summary		북마크를 DB에 추가하는 API
+//	@Summary		특정 유저가 북마크를 DB에 추가하는 API
 //	@Description	새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
 //	@Tags			bookmark
 //	@Accept			json
@@ -23,13 +24,12 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 	// Check user permissions to create a new bookmark
 
 	params := &models.AddBookmarkRequest{}
-
 	err := c.BodyParser(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
 			Message: err.Error(),
-			Data:    nil,
+			Data:    err,
 		})
 	}
 
@@ -42,14 +42,14 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func AddBookmarkHandler]", "params", params)
 
 	bookmark := &models.Bookmark{
 		UserID: params.UserID,
 		Title:  params.Title,
 		Link:   params.Link,
 	}
-
-	err = crud.AddBookmark(bookmark)
+	bookmark, err = crud.AddBookmark(bookmark)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
 			Error:   true,
@@ -57,6 +57,7 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func AddBookmarkHandler]", "bookmark", bookmark)
 
 	return c.Status(fiber.StatusOK).JSON(models.AddBookmarkResponse{
 		Error:   false,
@@ -67,7 +68,7 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 
 // GetBookmarkByIdHandler
 //
-//	@Summary	ID를 사용해 북마크 1개 정보 읽기
+//	@Summary	특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환
 //	@Tags		bookmark
 //	@Produce	json
 //	@Param		id	path		uint	true	"Bookmark ID"
@@ -75,9 +76,8 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 //	@Failure	400	{object}	models.GetBookmarkByIdResponse{}
 //	@Router		/api/v1/bookmark/{id}/ [get]
 func GetBookmarkByIdHandler(c *fiber.Ctx) error {
-	param := models.Bookmark{}
-
-	err := c.ParamsParser(&param)
+	params := models.Bookmark{}
+	err := c.ParamsParser(&params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
 			Error:   true,
@@ -86,7 +86,18 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	found, err := crud.GetBookmarkById(param.ID)
+	validator := &utils.Validator{}
+	validateError := validator.Validate(params)
+	if validateError != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
+			Error:   true,
+			Data:    validateError,
+			Message: "Validation failed",
+		})
+	}
+	log.Infow("[func GetBookmarkByIdHandler]", "params", params)
+
+	found, err := crud.GetBookmarkById(params.ID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
 			Error:   true,
@@ -94,6 +105,7 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func GetBookmarkByIdHandler]", "found", found)
 
 	return c.Status(fiber.StatusOK).JSON(models.GetBookmarkByIdResponse{
 		Error:   false,
@@ -104,7 +116,7 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 
 // GetAllBookmarksHandler
 //
-//	@Summary	offset부터 limit까지 북마크 목록을 반환
+//	@Summary	특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환
 //	@Tags		bookmark
 //	@Produce	json
 //	@Param		offset	query		int	false	"limit과 offset은 같이 입력해야 합니다"
@@ -132,6 +144,7 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 			Data:    validateErrs,
 		})
 	}
+	log.Infow("[func GetAllBookmarksHandler]", "params", params)
 
 	found, err := crud.GetAllBookmarks(params)
 	if err != nil {
@@ -141,6 +154,7 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 			Data:    nil,
 		})
 	}
+	log.Debugw("[func GetAllBookmarksHandler]", "found", found)
 
 	return c.Status(fiber.StatusOK).JSON(models.GetAllBookmarksResponse{
 		Error:   false,

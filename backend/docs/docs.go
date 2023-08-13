@@ -86,7 +86,7 @@ const docTemplate = `{
                 "tags": [
                     "bookmark"
                 ],
-                "summary": "offset부터 limit까지 북마크 목록을 반환",
+                "summary": "특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환",
                 "parameters": [
                     {
                         "type": "integer",
@@ -142,7 +142,7 @@ const docTemplate = `{
                 "tags": [
                     "bookmark"
                 ],
-                "summary": "북마크를 DB에 추가하는 API",
+                "summary": "특정 유저가 북마크를 DB에 추가하는 API",
                 "parameters": [
                     {
                         "description": "body params",
@@ -190,7 +190,7 @@ const docTemplate = `{
                 "tags": [
                     "bookmark"
                 ],
-                "summary": "ID를 사용해 북마크 1개 정보 읽기",
+                "summary": "특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환",
                 "parameters": [
                     {
                         "type": "integer",
@@ -418,8 +418,7 @@ const docTemplate = `{
                     "example": "https://cheesecat47.github.io"
                 },
                 "title": {
-                    "type": "string",
-                    "minLength": 1
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "integer",

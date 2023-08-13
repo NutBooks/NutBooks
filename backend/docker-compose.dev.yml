@@ -1,0 +1,26 @@
+version: "3.9"
+
+volumes:
+  mysql_data:
+
+services:
+  fiber:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: ${DOCKER_REGISTRY}/nutbooks-api-dev
+    volumes:
+      - "./:/build"
+      - ./wait-for-it.sh:/wait-for-it.sh
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /wait-for-it.sh -t 10 mysql:3306 -- air

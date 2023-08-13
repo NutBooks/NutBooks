@@ -15,7 +15,7 @@ type Bookmark struct {
 type (
 	AddBookmarkRequest struct {
 		UserID uint   `validate:"required,number,min=1" json:"user_id"`
-		Title  string `validate:"min=1" default:"" json:"title"`
+		Title  string `default:"" json:"title"`
 		Link   string `validate:"required,http_url" json:"link" example:"https://cheesecat47.github.io"`
 	}
 
@@ -26,7 +26,7 @@ type (
 	}
 
 	GetBookmarkByIdRequest struct {
-		ID int `validate:"required,number,min=1" json:"id"`
+		ID uint `validate:"required,number,min=1" json:"bookmark_id"`
 	}
 
 	GetBookmarkByIdResponse struct {
