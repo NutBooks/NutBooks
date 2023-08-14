@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddAuthentication(authentication *models.Authentication) (*models.Authentication, error) {
+func AddAuthenticationByUserId(authentication *models.Authentication) (*models.Authentication, error) {
 	result := conn.DB.Create(authentication)
 	if result == nil {
 		return nil, errors.New("Failed to create this authentication")

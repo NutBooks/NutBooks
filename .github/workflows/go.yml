@@ -5,6 +5,8 @@ name: Backend - API server tests
 
 on:
   push:
+    paths:
+      - 'backend/**'
     branches:
       - 'develop'
       - '**/BE/**'

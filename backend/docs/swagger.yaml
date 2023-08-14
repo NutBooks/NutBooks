@@ -13,7 +13,6 @@ definitions:
         example: https://cheesecat47.github.io
         type: string
       title:
-        minLength: 1
         type: string
       user_id:
         minimum: 1
@@ -220,7 +219,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetAllBookmarksResponse'
-      summary: offset부터 limit까지 북마크 목록을 반환
+      summary: 특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환
       tags:
       - bookmark
     post:
@@ -250,7 +249,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.AddBookmarkResponse'
-      summary: 북마크를 DB에 추가하는 API
+      summary: 특정 유저가 북마크를 DB에 추가하는 API
       tags:
       - bookmark
   /api/v1/bookmark/{id}/:
@@ -277,7 +276,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetBookmarkByIdResponse'
-      summary: ID를 사용해 북마크 1개 정보 읽기
+      summary: 특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환
       tags:
       - bookmark
   /api/v1/user/:
