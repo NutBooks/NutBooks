@@ -190,3 +190,29 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 		Data:    found,
 	})
 }
+
+// CheckEmailDuplicateHandler
+//
+//	@Summary		이메일 중복 체크.
+//	@Description	입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 "True" 반환, 없다면 "False" 반환.
+//	@Tags			user
+//	@Produce		json
+//	@Param			email	query		string	true	"중복 체크 할 이메일 주소 입력. 최대 길이 50자 제한."
+//	@Success		200		{object}	models.CheckEmailDuplicateResponse{}
+//	@Failure		400		{object}	models.CheckEmailDuplicateResponse{}
+//	@Router			/api/v1/user/check-email/ [get]
+func CheckEmailDuplicateHandler(c *fiber.Ctx) error {
+	// 파라미터 파싱
+	// 파라미터 유효성 검사
+	// db 조회
+
+	isEmailDuplicated := "False"
+	// 결과가 0이 아니면 (같은 이메일을 쓰는 유저 수가 0이 아니면)
+	// 상태 코드는 200 OK 이고 isEmailDuplicated = "True"로 변경
+
+	return c.Status(fiber.StatusOK).JSON(models.CheckEmailDuplicateResponse{
+		Error:   false,
+		Message: isEmailDuplicated,
+		Data:    nil,
+	})
+}
