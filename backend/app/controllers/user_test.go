@@ -287,12 +287,11 @@ func testGetAllUsersHandler(t *testing.T) {
 	}
 }
 
-// 이메일 중복 체크 핸들러 테스트
+// testCheckEmailDuplicateHandler
 //
-// [controllers.CheckEmailDuplicateHandler]
+// [controllers.CheckEmailDuplicateHandler] 테스트
 //
 // # Test Cases
-//
 //   - Case 1: 쿼리 파라미터로 입력한 이메일이 존재하는 경우 응답 Body의 Message로 "True" (이 이메일 사용 불가)
 //   - Case 2: 이메일이 존재하지 않는다면 "False"를 반환. (이 이메일 사용 가능)
 //   - Case 3: 이상한 형식의 이메일 입력. Validation Error 반환.

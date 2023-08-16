@@ -32,17 +32,23 @@ definitions:
   models.AddUserRequest:
     properties:
       email:
+        description: |-
+          이메일 형식은 [go-playground/validator] 참고
+
+          [go-playground/validator]: https://github.com/go-playground/validator
         example: ""
         maxLength: 50
         minLength: 5
         type: string
       name:
+        description: 알파벳, 숫자, 유니코드 문자 사용 가능
         example: ""
         maxLength: 50
         minLength: 1
         type: string
       password:
-        example: 비밀번호는 영문 + 숫자 8-12자리
+        description: 비밀번호는 영문 + 숫자 8-12자리
+        example: ""
         maxLength: 12
         minLength: 8
         type: string
@@ -143,6 +149,10 @@ definitions:
   models.User:
     properties:
       Authority:
+        description: |-
+          사용자 권한
+           - [AuthorityNone]
+           - [AuthorityAdmin]
         type: string
       createdAt:
         type: string
@@ -151,6 +161,12 @@ definitions:
       id:
         type: integer
       name:
+        description: |-
+          사용자 이름.
+
+          알파벳, 숫자, 유니코드 문자 사용 가능
+
+          [AddUserRequest.Name] 으로 입력 시 validation
         type: string
       updatedAt:
         type: string
@@ -324,8 +340,10 @@ paths:
       tags:
       - user
     post:
+      consumes:
+      - application/json
       parameters:
-      - description: params
+      - description: 비밀번호는 영문 + 숫자 8-12자리
         in: body
         name: params
         required: true
@@ -351,7 +369,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.AddUserResponse'
-      summary: 새 유저를 추가하는 API
+      summary: 새 유저 추가
       tags:
       - user
   /api/v1/user/{id}:

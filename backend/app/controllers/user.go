@@ -13,10 +13,11 @@ import (
 
 // AddUserHandler
 //
-//	@Summary	새 유저를 추가하는 API
+//	@Summary	새 유저 추가
 //	@Tags		user
+//	@Accept		json
 //	@Produce	json
-//	@Param		params	body		models.AddUserRequest	true	"params"
+//	@Param		params	body		models.AddUserRequest	true	"비밀번호는 영문 + 숫자 8-12자리"
 //	@Success	200		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}

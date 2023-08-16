@@ -8,6 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// AddUser
+// DB의 User 테이블에 레코드 추가
+//
+// # Parameters
+//   - user *models.User: 생성할 유저 정보 구조체
+//
+// # Returns
+//   - *models.User: 생성된 유저 정보 구조체
+//   - error: Custom error or [gorm.DB.Error]
 func AddUser(user *models.User) (*models.User, error) {
 	log.Debugw("[func AddUser]", "user", user)
 
