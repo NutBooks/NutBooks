@@ -4,8 +4,11 @@ import (
 	"api/app/utils"
 	"api/db/crud"
 	"api/db/models"
+	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"gorm.io/gorm"
 )
 
 // AddUserHandler
@@ -17,7 +20,7 @@ import (
 //	@Success	200		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
-//	@Router		/api/v1/user/ [post]
+//	@Router		/api/v1/user [post]
 func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 	if err := c.BodyParser(params); err != nil {
@@ -100,7 +103,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
 //	@Failure	400	{object}	models.GetUserByIdResponse{}
 //	@Failure	500	{object}	models.AddUserResponse{}
-//	@Router		/api/v1/user/{id}/ [get]
+//	@Router		/api/v1/user/{id} [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
 	err := c.ParamsParser(params)
@@ -151,7 +154,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Failure	400		{object}	models.GetAllUsersResponse{}
 //
 //	@Failure	500		{object}	models.GetAllUsersResponse{}
-//	@Router		/api/v1/user/ [get]
+//	@Router		/api/v1/user [get]
 func GetAllUsersHandler(c *fiber.Ctx) error {
 	params := &models.GetAllUsersRequest{}
 	err := c.QueryParser(params)
@@ -194,25 +197,56 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 // CheckEmailDuplicateHandler
 //
 //	@Summary		이메일 중복 체크.
-//	@Description	입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 "True" 반환, 없다면 "False" 반환.
+//	@Description	입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 True 반환, 없다면 False 반환.
 //	@Tags			user
 //	@Produce		json
 //	@Param			email	query		string	true	"중복 체크 할 이메일 주소 입력. 최대 길이 50자 제한."
 //	@Success		200		{object}	models.CheckEmailDuplicateResponse{}
 //	@Failure		400		{object}	models.CheckEmailDuplicateResponse{}
-//	@Router			/api/v1/user/check-email/ [get]
+//	@Failure		500		{object}	models.CheckEmailDuplicateResponse{}
+//	@Router			/api/v1/user/check-email [get]
 func CheckEmailDuplicateHandler(c *fiber.Ctx) error {
-	// 파라미터 파싱
-	// 파라미터 유효성 검사
-	// db 조회
+	params := &models.CheckEmailDuplicateRequest{}
+	err := c.QueryParser(params)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.CheckEmailDuplicateResponse{
+			Error:   true,
+			Message: fmt.Sprintf("Failed to parse query parameters: %v", err.Error()),
+			Data:    nil,
+		})
+	}
 
-	isEmailDuplicated := "False"
-	// 결과가 0이 아니면 (같은 이메일을 쓰는 유저 수가 0이 아니면)
-	// 상태 코드는 200 OK 이고 isEmailDuplicated = "True"로 변경
+	validator := &utils.Validator{}
+	validateErrs := validator.Validate(params)
+	if validateErrs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.CheckEmailDuplicateResponse{
+			Error:   true,
+			Message: "Validation failed",
+			Data:    validateErrs,
+		})
+	}
+	log.Infow("[func CheckEmailDuplicateHandler]", "params", params)
+
+	_, err = crud.GetUserByEmail(params.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusOK).JSON(models.CheckEmailDuplicateResponse{
+				Error:   false,
+				Message: "False",
+				Data:    nil,
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.CheckEmailDuplicateResponse{
+				Error:   true,
+				Message: err.Error(),
+				Data:    err,
+			})
+		}
+	}
 
 	return c.Status(fiber.StatusOK).JSON(models.CheckEmailDuplicateResponse{
 		Error:   false,
-		Message: isEmailDuplicated,
+		Message: "True",
 		Data:    nil,
 	})
 }

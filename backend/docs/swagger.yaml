@@ -287,7 +287,7 @@ paths:
       summary: 특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환
       tags:
       - bookmark
-  /api/v1/user/:
+  /api/v1/user:
     get:
       parameters:
       - description: limit과 offset은 같이 입력해야 합니다.
@@ -354,7 +354,7 @@ paths:
       summary: 새 유저를 추가하는 API
       tags:
       - user
-  /api/v1/user/{id}/:
+  /api/v1/user/{id}:
     get:
       parameters:
       - description: User ID
@@ -385,9 +385,9 @@ paths:
       summary: UserID를 사용해 유저 1명 정보 읽기
       tags:
       - user
-  /api/v1/user/check-email/:
+  /api/v1/user/check-email:
     get:
-      description: 입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 "True" 반환, 없다면 "False" 반환.
+      description: 입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 True 반환, 없다면 False 반환.
       parameters:
       - description: 중복 체크 할 이메일 주소 입력. 최대 길이 50자 제한.
         in: query
@@ -403,6 +403,10 @@ paths:
             $ref: '#/definitions/models.CheckEmailDuplicateResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/models.CheckEmailDuplicateResponse'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.CheckEmailDuplicateResponse'
       summary: 이메일 중복 체크.

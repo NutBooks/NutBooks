@@ -47,7 +47,7 @@ func testAddUserHandler(t *testing.T) {
 		{
 			name:   "Add  user -> success",
 			method: "POST",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.AddUserRequest{
 				Name:     "tester1",
 				Email:    "tester1@example.com",
@@ -60,7 +60,7 @@ func testAddUserHandler(t *testing.T) {
 		{
 			name:   "Add user without name and email -> fail",
 			method: "POST",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.AddUserRequest{
 				Name:     "",
 				Email:    "",
@@ -73,7 +73,7 @@ func testAddUserHandler(t *testing.T) {
 		{
 			name:   "Add user without name -> fail",
 			method: "POST",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.AddUserRequest{
 				Name:     "",
 				Email:    "tester3@example.com",
@@ -86,7 +86,7 @@ func testAddUserHandler(t *testing.T) {
 		{
 			name:   "Add user without email -> fail",
 			method: "POST",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.AddUserRequest{
 				Name:     "tester4",
 				Email:    "",
@@ -99,7 +99,7 @@ func testAddUserHandler(t *testing.T) {
 		{
 			name:   "Add user with wrong email format -> fail",
 			method: "POST",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.AddUserRequest{
 				Name:     "tester5",
 				Email:    "tester5email",
@@ -112,7 +112,7 @@ func testAddUserHandler(t *testing.T) {
 		{
 			name:   "Add user with wrong password format -> fail",
 			method: "POST",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.AddUserRequest{
 				Name:     "tester5",
 				Email:    "tester5email",
@@ -162,7 +162,7 @@ func testGetUserByIdHandler(t *testing.T) {
 		{
 			name:   "Get user of testUser1 using testUser1.ID -> success",
 			method: "GET",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.GetUserByIdRequest{
 				ID: testUser1.ID,
 			},
@@ -173,7 +173,7 @@ func testGetUserByIdHandler(t *testing.T) {
 		{
 			name:   "Get not existing user -> fail",
 			method: "GET",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.GetUserByIdRequest{
 				ID: 464749,
 			},
@@ -190,7 +190,7 @@ func testGetUserByIdHandler(t *testing.T) {
 			require.NoError(t, err)
 			t.Log("buf: ", buf)
 
-			req := httptest.NewRequest(tt.method, fmt.Sprintf("%s%d", tt.route, tt.body.ID), buf)
+			req := httptest.NewRequest(tt.method, fmt.Sprintf("%s/%d", tt.route, tt.body.ID), buf)
 			req.Header.Set("Content-Type", "application/json")
 			t.Log("req: ", req)
 
@@ -221,7 +221,7 @@ func testGetAllUsersHandler(t *testing.T) {
 		{
 			name:            "Get all users -> success",
 			method:          "GET",
-			route:           "/api/v1/user/",
+			route:           "/api/v1/user",
 			body:            models.GetAllUsersRequest{},
 			expectedError:   false,
 			expectedCode:    http.StatusOK,
@@ -230,7 +230,7 @@ func testGetAllUsersHandler(t *testing.T) {
 		{
 			name:   "Get all users using negative offset value -> fail",
 			method: "GET",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.GetAllUsersRequest{
 				Offset: -1,
 			},
@@ -241,7 +241,7 @@ func testGetAllUsersHandler(t *testing.T) {
 		{
 			name:   "Get all users using negative limit value -> fail",
 			method: "GET",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.GetAllUsersRequest{
 				Limit: -1,
 			},
@@ -252,7 +252,7 @@ func testGetAllUsersHandler(t *testing.T) {
 		{
 			name:   "Get all users using offset and limit value -> success",
 			method: "GET",
-			route:  "/api/v1/user/",
+			route:  "/api/v1/user",
 			body: models.GetAllUsersRequest{
 				Offset: int(testUser1.ID),
 				Limit:  1,
@@ -343,12 +343,12 @@ func testCheckEmailDuplicateHandler(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, tt.route, nil)
-			q := req.URL.Query()
-			for k, v := range tt.params {
-				q.Add(k, v)
-			}
-			req.URL.RawQuery = q.Encode()
+			req := httptest.NewRequest(
+				tt.method,
+				fmt.Sprintf("%s?email=%s", tt.route, tt.params["email"]),
+				nil,
+			)
+			t.Log("req:", req)
 
 			resp, err := app.Test(req, -1)
 			t.Log("resp: ", resp)

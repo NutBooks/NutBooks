@@ -228,7 +228,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/": {
+        "/api/v1/user": {
             "get": {
                 "produces": [
                     "application/json"
@@ -340,9 +340,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/check-email/": {
+        "/api/v1/user/check-email": {
             "get": {
-                "description": "입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 \"True\" 반환, 없다면 \"False\" 반환.",
+                "description": "입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 True 반환, 없다면 False 반환.",
                 "produces": [
                     "application/json"
                 ],
@@ -371,11 +371,17 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/v1/user/{id}/": {
+        "/api/v1/user/{id}": {
             "get": {
                 "produces": [
                     "application/json"
