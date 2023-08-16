@@ -18,7 +18,7 @@ import (
 //	@Accept		json
 //	@Produce	json
 //	@Param		params	body		models.AddUserRequest	true	"비밀번호는 영문 + 숫자 8-12자리"
-//	@Success	200		{object}	models.AddUserResponse{data=models.User}
+//	@Success	201		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user [post]
@@ -101,7 +101,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 	}
 	log.Debugw("[func AddUserHandler]", "password", password)
 
-	return c.Status(fiber.StatusOK).JSON(models.AddUserResponse{
+	return c.Status(fiber.StatusCreated).JSON(models.AddUserResponse{
 		Error:   false,
 		Message: "Success",
 		Data:    user,

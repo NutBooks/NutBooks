@@ -310,8 +310,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
@@ -498,7 +498,7 @@ const docTemplate = `{
                     "example": ""
                 },
                 "name": {
-                    "description": "알파벳, 숫자, 유니코드 문자 사용 가능",
+                    "description": "사용자 이름. 알파벳, 숫자, 유니코드 문자 사용 가능.",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 1,
