@@ -22,9 +22,10 @@ func controllersTestApp(t *testing.T) {
 
 	// User
 	user := route.Group("/user")
-	user.Post("/", AddUserHandler)
-	user.Get("/:id/", GetUserByIdHandler)
-	user.Get("/", GetAllUsersHandler)
+	user.Post("", AddUserHandler)
+	user.Get("/:id<int>", GetUserByIdHandler)
+	user.Get("", GetAllUsersHandler)
+	user.Get("/check-email", CheckEmailDuplicateHandler)
 
 	// Auth router
 	auth := route.Group("/auth")

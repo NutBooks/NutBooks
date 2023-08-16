@@ -24,9 +24,10 @@ func PublicRoutes(app *fiber.App) {
 
 	// User router
 	user := v1.Group("/user")
-	user.Post("/", controllers.AddUserHandler)
-	user.Get("/:id/", controllers.GetUserByIdHandler)
-	user.Get("/", controllers.GetAllUsersHandler)
+	user.Post("", controllers.AddUserHandler)
+	user.Get("/:id<int>", controllers.GetUserByIdHandler)
+	user.Get("", controllers.GetAllUsersHandler)
+	user.Get("/check-email", controllers.CheckEmailDuplicateHandler)
 
 	// Auth router
 	auth := v1.Group("/auth")

@@ -69,6 +69,16 @@ type (
 		Data    interface{} `json:"data"`
 		Message string      `json:"message"`
 	}
+
+	CheckEmailDuplicateRequest struct {
+		Email string `validate:"required,min=5,max=50,email" json:"email" form:"email" example:""`
+	}
+
+	CheckEmailDuplicateResponse struct {
+		Error   bool        `json:"error"`
+		Data    interface{} `json:"data"`
+		Message string      `json:"message"`
+	}
 )
 
 const (

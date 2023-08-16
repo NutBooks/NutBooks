@@ -228,7 +228,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/": {
+        "/api/v1/user": {
             "get": {
                 "produces": [
                     "application/json"
@@ -340,7 +340,48 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/{id}/": {
+        "/api/v1/user/check-email": {
+            "get": {
+                "description": "입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 True 반환, 없다면 False 반환.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "이메일 중복 체크.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "중복 체크 할 이메일 주소 입력. 최대 길이 50자 제한.",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -501,6 +542,18 @@ const docTemplate = `{
                 },
                 "userID": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.CheckEmailDuplicateResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
