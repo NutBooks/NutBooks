@@ -23,7 +23,7 @@ func testBookmarkController(t *testing.T) {
 	testUser2, _ = crud.AddUser(&models.User{
 		Name:      "testerBookmark",
 		Authority: models.AuthorityNone,
-	})
+	}, nil)
 
 	bookmark1, _ = crud.AddBookmark(&models.Bookmark{
 		UserID: testUser2.ID,

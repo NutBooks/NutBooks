@@ -22,11 +22,11 @@ func testUserController(t *testing.T) {
 	testUser1, _ = crud.AddUser(&models.User{
 		Name:      "testUserController",
 		Authority: models.AuthorityNone,
-	})
+	}, nil)
 	testEmail1, _ = crud.AddAuthenticationByUserId(&models.Authentication{
 		UserID: testUser1.ID,
 		Email:  "testUser1@example.com",
-	})
+	}, nil)
 
 	t.Run("testAddUserHandler", testAddUserHandler)
 	t.Run("testGetUserByIdHandler", testGetUserByIdHandler)
@@ -54,7 +54,7 @@ func testAddUserHandler(t *testing.T) {
 				Password: "tester1pw1",
 			},
 			expectedError:   false,
-			expectedCode:    http.StatusOK,
+			expectedCode:    http.StatusCreated,
 			expectedMessage: "Success",
 		},
 		{

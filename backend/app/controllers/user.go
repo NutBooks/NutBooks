@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"api/app/utils"
+	conn "api/db"
 	"api/db/crud"
 	"api/db/models"
 	"errors"
@@ -45,11 +46,13 @@ func AddUserHandler(c *fiber.Ctx) error {
 
 	checkEmail, err := crud.GetUserByEmail(params.Email)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
-			Error:   true,
-			Message: fmt.Sprintf("Failed to check email duplicate: %v", err.Error()),
-			Data:    err,
-		})
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+				Error:   true,
+				Message: fmt.Sprintf("Failed to check email duplicate: %v", err.Error()),
+				Data:    err,
+			})
+		}
 	}
 	if checkEmail != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
@@ -59,12 +62,15 @@ func AddUserHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	tx := conn.DB.Begin()
+
 	user := &models.User{
 		Name:      params.Name,
 		Authority: models.AuthorityNone,
 	}
-	user, err = crud.AddUser(user)
+	user, err = crud.AddUser(user, tx)
 	if err != nil {
+		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: fmt.Sprintf("Failed to create user: %v", err.Error()),
@@ -77,8 +83,9 @@ func AddUserHandler(c *fiber.Ctx) error {
 		UserID: user.ID,
 		Email:  params.Email,
 	}
-	authentication, err = crud.AddAuthenticationByUserId(authentication)
+	authentication, err = crud.AddAuthenticationByUserId(authentication, tx)
 	if err != nil {
+		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: fmt.Sprintf("Failed to create authentication: %v", err.Error()),
@@ -91,8 +98,9 @@ func AddUserHandler(c *fiber.Ctx) error {
 		UserID:   user.ID,
 		Password: params.Password,
 	}
-	password, err = crud.AddPasswordByUserId(password)
+	password, err = crud.AddPasswordByUserId(password, tx)
 	if err != nil {
+		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -100,6 +108,8 @@ func AddUserHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Debugw("[func AddUserHandler]", "password", password)
+
+	tx.Commit()
 
 	return c.Status(fiber.StatusCreated).JSON(models.AddUserResponse{
 		Error:   false,

@@ -22,15 +22,15 @@ func testAuthenticationController(t *testing.T) {
 	testUserUser, _ = crud.AddUser(&models.User{
 		Name:      "testerLogIn",
 		Authority: models.AuthorityNone,
-	})
+	}, nil)
 	testUserAuthentication, _ = crud.AddAuthenticationByUserId(&models.Authentication{
 		UserID: testUserUser.ID,
 		Email:  "testerLogIn@example.com",
-	})
+	}, nil)
 	testUserPassword, _ = crud.AddPasswordByUserId(&models.Password{
 		UserID:   testUserUser.ID,
 		Password: "testerPw1",
-	})
+	}, nil)
 
 	t.Run("testLogInHandler", testLogInHandler)
 }
