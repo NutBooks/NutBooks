@@ -8,10 +8,24 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddUser(user *models.User) (*models.User, error) {
+// AddUser
+// DB의 User 테이블에 레코드 추가
+//
+// # Parameters
+//   - user *models.User: 생성할 유저 정보 구조체
+//   - tx *gorm.DB: 트랜잭션 필요 시 사용. nil이면 기본 커넥션 [../db.DB] 객체 사용
+//
+// # Returns
+//   - *models.User: 생성된 유저 정보 구조체
+//   - error: Custom error or [gorm.DB.Error]
+func AddUser(user *models.User, tx *gorm.DB) (*models.User, error) {
 	log.Debugw("[func AddUser]", "user", user)
 
-	result := conn.DB.Create(user)
+	if tx == nil {
+		tx = conn.DB
+	}
+
+	result := tx.Create(user)
 	if result == nil {
 		return nil, errors.New("[func AddUser] Failed to create this user")
 	}

@@ -22,11 +22,11 @@ func testUserController(t *testing.T) {
 	testUser1, _ = crud.AddUser(&models.User{
 		Name:      "testUserController",
 		Authority: models.AuthorityNone,
-	})
+	}, nil)
 	testEmail1, _ = crud.AddAuthenticationByUserId(&models.Authentication{
 		UserID: testUser1.ID,
 		Email:  "testUser1@example.com",
-	})
+	}, nil)
 
 	t.Run("testAddUserHandler", testAddUserHandler)
 	t.Run("testGetUserByIdHandler", testGetUserByIdHandler)
@@ -54,7 +54,7 @@ func testAddUserHandler(t *testing.T) {
 				Password: "tester1pw1",
 			},
 			expectedError:   false,
-			expectedCode:    http.StatusOK,
+			expectedCode:    http.StatusCreated,
 			expectedMessage: "Success",
 		},
 		{
@@ -287,12 +287,11 @@ func testGetAllUsersHandler(t *testing.T) {
 	}
 }
 
-// 이메일 중복 체크 핸들러 테스트
+// testCheckEmailDuplicateHandler
 //
-// [controllers.CheckEmailDuplicateHandler]
+// [controllers.CheckEmailDuplicateHandler] 테스트
 //
 // # Test Cases
-//
 //   - Case 1: 쿼리 파라미터로 입력한 이메일이 존재하는 경우 응답 Body의 Message로 "True" (이 이메일 사용 불가)
 //   - Case 2: 이메일이 존재하지 않는다면 "False"를 반환. (이 이메일 사용 가능)
 //   - Case 3: 이상한 형식의 이메일 입력. Validation Error 반환.

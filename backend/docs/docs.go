@@ -288,16 +288,19 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "user"
                 ],
-                "summary": "새 유저를 추가하는 API",
+                "summary": "새 유저 추가",
                 "parameters": [
                     {
-                        "description": "params",
+                        "description": "비밀번호는 영문 + 숫자 8-12자리",
                         "name": "params",
                         "in": "body",
                         "required": true,
@@ -307,8 +310,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
@@ -488,22 +491,25 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
+                    "description": "이메일 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 5,
                     "example": ""
                 },
                 "name": {
+                    "description": "사용자 이름. 알파벳, 숫자, 유니코드 문자 사용 가능.",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 1,
                     "example": ""
                 },
                 "password": {
+                    "description": "비밀번호는 영문 + 숫자 8-12자리",
                     "type": "string",
                     "maxLength": 12,
                     "minLength": 8,
-                    "example": "비밀번호는 영문 + 숫자 8-12자리"
+                    "example": ""
                 }
             }
         },
@@ -642,6 +648,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "Authority": {
+                    "description": "사용자 권한\n - [AuthorityNone]\n - [AuthorityAdmin]",
                     "type": "string"
                 },
                 "createdAt": {
@@ -654,6 +661,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "description": "사용자 이름.\n\n알파벳, 숫자, 유니코드 문자 사용 가능\n\n[AddUserRequest.Name] 으로 입력 시 validation",
                     "type": "string"
                 },
                 "updatedAt": {

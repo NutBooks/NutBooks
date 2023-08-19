@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"api/app/utils"
+	conn "api/db"
 	"api/db/crud"
 	"api/db/models"
 	"errors"
@@ -13,20 +14,21 @@ import (
 
 // AddUserHandler
 //
-//	@Summary	새 유저를 추가하는 API
+//	@Summary	새 유저 추가
 //	@Tags		user
+//	@Accept		json
 //	@Produce	json
-//	@Param		params	body		models.AddUserRequest	true	"params"
-//	@Success	200		{object}	models.AddUserResponse{data=models.User}
+//	@Param		params	body		models.AddUserRequest	true	"비밀번호는 영문 + 숫자 8-12자리"
+//	@Success	201		{object}	models.AddUserResponse{data=models.User}
 //	@Failure	400		{object}	models.AddUserResponse{}
 //	@Failure	500		{object}	models.AddUserResponse{}
 //	@Router		/api/v1/user [post]
 func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 	if err := c.BodyParser(params); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
 			Error:   true,
-			Message: err.Error(),
+			Message: fmt.Sprintf("Failed to parse parameters: %v", err.Error()),
 			Data:    err,
 		})
 	}
@@ -42,18 +44,36 @@ func AddUserHandler(c *fiber.Ctx) error {
 	}
 	log.Infow("[func AddUserHandler]", "params", params)
 
-	// 이메일 중복 확인 로직을 추가하든, 이메일 중복 시 user create를 rollback 하든
-	// 로릭 추가 필요
+	checkEmail, err := crud.GetUserByEmail(params.Email)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+				Error:   true,
+				Message: fmt.Sprintf("Failed to check email duplicate: %v", err.Error()),
+				Data:    err,
+			})
+		}
+	}
+	if checkEmail != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
+			Error:   true,
+			Message: "This email is already in use",
+			Data:    nil,
+		})
+	}
+
+	tx := conn.DB.Begin()
 
 	user := &models.User{
 		Name:      params.Name,
 		Authority: models.AuthorityNone,
 	}
-	user, err := crud.AddUser(user)
+	user, err = crud.AddUser(user, tx)
 	if err != nil {
+		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
-			Message: err.Error(),
+			Message: fmt.Sprintf("Failed to create user: %v", err.Error()),
 			Data:    nil,
 		})
 	}
@@ -63,11 +83,12 @@ func AddUserHandler(c *fiber.Ctx) error {
 		UserID: user.ID,
 		Email:  params.Email,
 	}
-	authentication, err = crud.AddAuthenticationByUserId(authentication)
+	authentication, err = crud.AddAuthenticationByUserId(authentication, tx)
 	if err != nil {
+		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
-			Message: err.Error(),
+			Message: fmt.Sprintf("Failed to create authentication: %v", err.Error()),
 			Data:    nil,
 		})
 	}
@@ -77,8 +98,9 @@ func AddUserHandler(c *fiber.Ctx) error {
 		UserID:   user.ID,
 		Password: params.Password,
 	}
-	password, err = crud.AddPasswordByUserId(password)
+	password, err = crud.AddPasswordByUserId(password, tx)
 	if err != nil {
+		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
 			Error:   true,
 			Message: err.Error(),
@@ -87,7 +109,9 @@ func AddUserHandler(c *fiber.Ctx) error {
 	}
 	log.Debugw("[func AddUserHandler]", "password", password)
 
-	return c.Status(fiber.StatusOK).JSON(models.AddUserResponse{
+	tx.Commit()
+
+	return c.Status(fiber.StatusCreated).JSON(models.AddUserResponse{
 		Error:   false,
 		Message: "Success",
 		Data:    user,
