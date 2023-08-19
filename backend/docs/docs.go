@@ -240,13 +240,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다.",
+                        "description": "특정 id부터 조회할 때 사용",
                         "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다.",
+                        "description": "limit 개수만큼 조회할 때 사용",
                         "name": "limit",
                         "in": "query"
                     }
@@ -255,34 +255,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetAllUsersResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.User"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetAllUsersResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAllUsersResponse"
+                            "$ref": "#/definitions/models.GetAllUsersWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAllUsersResponse"
+                            "$ref": "#/definitions/models.GetAllUsersWithErrorResponse"
                         }
                     }
                 }
@@ -313,31 +298,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.AddUserResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.AddUserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserResponse"
+                            "$ref": "#/definitions/models.AddUserWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserResponse"
+                            "$ref": "#/definitions/models.AddUserWithErrorResponse"
                         }
                     }
                 }
@@ -372,13 +345,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                            "$ref": "#/definitions/models.CheckEmailDuplicateWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                            "$ref": "#/definitions/models.CheckEmailDuplicateWithErrorResponse"
                         }
                     }
                 }
@@ -406,31 +379,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetUserByIdResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetUserByIdResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetUserByIdResponse"
+                            "$ref": "#/definitions/models.GetUserByIdWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserResponse"
+                            "$ref": "#/definitions/models.GetUserByIdWithErrorResponse"
                         }
                     }
                 }
@@ -491,29 +452,47 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "description": "이메일 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 5,
-                    "example": ""
+                    "example": "cheesecat47@gmail.com"
                 },
                 "name": {
-                    "description": "사용자 이름. 알파벳, 숫자, 유니코드 문자 사용 가능.",
+                    "description": "알파벳, 숫자, 유니코드 문자 사용 가능",
                     "type": "string",
                     "maxLength": 50,
-                    "minLength": 1,
-                    "example": ""
+                    "minLength": 1
                 },
                 "password": {
-                    "description": "비밀번호는 영문 + 숫자 8-12자리",
+                    "description": "영문 + 숫자 8-12자리",
                     "type": "string",
                     "maxLength": 12,
                     "minLength": 8,
-                    "example": ""
+                    "example": "qwerty123"
                 }
             }
         },
         "models.AddUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "생성된 유저 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AddUserWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -522,6 +501,30 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Authentication": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },
@@ -554,6 +557,25 @@ const docTemplate = `{
         "models.CheckEmailDuplicateResponse": {
             "type": "object",
             "properties": {
+                "data": {
+                    "description": "생성된 인증 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Authentication"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CheckEmailDuplicateWithErrorResponse": {
+            "type": "object",
+            "properties": {
                 "data": {},
                 "error": {
                     "type": "boolean"
@@ -578,6 +600,33 @@ const docTemplate = `{
         "models.GetAllUsersResponse": {
             "type": "object",
             "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "description": "유저 정보 배열",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.User"
+                            }
+                        },
+                        "size": {
+                            "description": "유저 배열 길이",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetAllUsersWithErrorResponse": {
+            "type": "object",
+            "properties": {
                 "data": {},
                 "error": {
                     "type": "boolean"
@@ -600,6 +649,25 @@ const docTemplate = `{
             }
         },
         "models.GetUserByIdResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "ID가 일치하는 유저 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetUserByIdWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -661,7 +729,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
-                    "description": "사용자 이름.\n\n알파벳, 숫자, 유니코드 문자 사용 가능\n\n[AddUserRequest.Name] 으로 입력 시 validation",
+                    "description": "알파벳, 숫자, 유니코드 문자 사용 가능",
                     "type": "string"
                 },
                 "updatedAt": {

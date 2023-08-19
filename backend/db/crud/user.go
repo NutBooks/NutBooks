@@ -8,8 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// AddUser
-// DB의 User 테이블에 레코드 추가
+// AddUser : DB의 User 테이블에 레코드 추가
 //
 // # Parameters
 //   - user *models.User: 생성할 유저 정보 구조체
@@ -37,6 +36,14 @@ func AddUser(user *models.User, tx *gorm.DB) (*models.User, error) {
 	return user, nil
 }
 
+// GetUserById : ID가 일치하는 유저 정보 중 첫 번째 정보를 반환
+//
+// # Parameters
+//   - id uint: 유저 ID
+//
+// # Returns
+//   - *models.User: DB에 id가 존재하면 유저 객체 반환, 없다면 nil 반환
+//   - error: Custom error or [gorm.DB.Error]
 func GetUserById(id uint) (*models.User, error) {
 	log.Debugw("[func GetUserById]", "id", id)
 
@@ -53,6 +60,14 @@ func GetUserById(id uint) (*models.User, error) {
 	return found, nil
 }
 
+// GetAllUsers : [offset:offset+limit] 범위에 해당하는 유저 정보 배열 반환. offset, limit 입력 없을 시 전체 목록 반환.
+//
+// # Parameters
+//   - params *models.GetAllUsersRequest: offset(int), limit(int) 포함
+//
+// # Returns
+//   - []models.User: DB에 해당 범위가 존재하면 유저 객체 목록 반환, 없다면 nil 반환
+//   - error: Custom error or [gorm.DB.Error]
 func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
 	log.Debugw("[func GetAllUsers]", "params", params)
 
@@ -71,6 +86,14 @@ func GetAllUsers(params *models.GetAllUsersRequest) ([]models.User, error) {
 	return found, nil
 }
 
+// GetUserByEmail : Email이 일치하는 유저 정보 중 첫 번째 정보를 반환
+//
+// # Parameters
+//   - email string: 유저 Email
+//
+// # Returns
+//   - *models.User: DB에 email이 존재하면 유저 객체 반환, 없다면 nil 반환
+//   - error: Custom error or [gorm.DB.Error]
 func GetUserByEmail(email string) (*models.User, error) {
 	log.Debugw("[func GetUserByEmail]", "email", email)
 
