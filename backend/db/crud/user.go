@@ -15,7 +15,7 @@ import (
 //   - tx *gorm.DB: 트랜잭션 필요 시 사용. nil이면 기본 커넥션 [../db.DB] 객체 사용
 //
 // # Returns
-//   - *models.User: 생성된 유저 정보 구조체
+//   - *models.User: 생성된 유저 정보 구조체, 생성 실패 시 nil
 //   - error: Custom error or [gorm.DB.Error]
 func AddUser(user *models.User, tx *gorm.DB) (*models.User, error) {
 	log.Debugw("[func AddUser]", "user", user)

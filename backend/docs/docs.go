@@ -78,7 +78,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookmark/": {
+        "/api/v1/bookmark": {
             "get": {
                 "produces": [
                     "application/json"
@@ -90,13 +90,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다",
+                        "description": "특정 id부터 조회할 때 사용",
                         "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다",
+                        "description": "limit 개수만큼 조회할 때 사용",
                         "name": "limit",
                         "in": "query"
                     }
@@ -105,28 +105,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetAllBookmarksResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.Bookmark"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetAllBookmarksResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAllBookmarksResponse"
+                            "$ref": "#/definitions/models.GetAllBookmarksWithErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAllBookmarksWithErrorResponse"
                         }
                     }
                 }
@@ -155,34 +146,28 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.AddBookmarkResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Bookmark"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.AddBookmarkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.AddBookmarkResponse"
+                            "$ref": "#/definitions/models.AddBookmarkWithErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddBookmarkWithErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/api/v1/bookmark/{id}/": {
+        "/api/v1/bookmark/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -204,25 +189,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetBookmarkByIdResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Bookmark"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetBookmarkByIdResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetBookmarkByIdResponse"
+                            "$ref": "#/definitions/models.GetBookmarkByIdWithErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetBookmarkByIdWithErrorResponse"
                         }
                     }
                 }
@@ -419,10 +398,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "link": {
+                    "description": "북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "example": "https://cheesecat47.github.io"
                 },
                 "title": {
+                    "description": "북마크 제목. 공백이면 og:title로 대체",
                     "type": "string"
                 },
                 "user_id": {
@@ -432,6 +413,25 @@ const docTemplate = `{
             }
         },
         "models.AddBookmarkResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "생성된 북마크 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Bookmark"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AddBookmarkWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -541,9 +541,11 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "link": {
+                    "description": "북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string"
                 },
                 "title": {
+                    "description": "북마크 제목. 공백이면 og:title로 대체",
                     "type": "string"
                 },
                 "updatedAt": {
@@ -586,6 +588,33 @@ const docTemplate = `{
             }
         },
         "models.GetAllBookmarksResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "description": "북마크 정보 배열",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Bookmark"
+                            }
+                        },
+                        "size": {
+                            "description": "북마크 배열 길이",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetAllBookmarksWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -637,6 +666,25 @@ const docTemplate = `{
             }
         },
         "models.GetBookmarkByIdResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "ID가 일치하는 북마크 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Bookmark"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetBookmarkByIdWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},

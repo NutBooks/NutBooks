@@ -8,6 +8,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// AddBookmark : DB의 Bookmark 테이블에 레코드 추가
+//
+// # Parameters
+//   - bookmark *models.Bookmark: 생성할 북마크 정보 구조체
+//
+// # Returns
+//   - *models.Bookmark: 생성된 북마크 정보 구조체, 생성 실패 시 nil
+//   - error: Custom error or [gorm.DB.Error]
 func AddBookmark(bookmark *models.Bookmark) (*models.Bookmark, error) {
 	log.Debugw("[func AddBookmark]", "bookmark", bookmark)
 
@@ -23,6 +31,14 @@ func AddBookmark(bookmark *models.Bookmark) (*models.Bookmark, error) {
 	return bookmark, nil
 }
 
+// GetBookmarkById : ID가 일치하는 북마크 정보 중 첫 번째 정보를 반환
+//
+// # Parameters
+//   - id uint: 북마크 ID
+//
+// # Returns
+//   - *models.Bookmark: DB에 id가 존재하면 북마크 객체 반환, 없다면 nil 반환
+//   - error: Custom error or [gorm.DB.Error]
 func GetBookmarkById(id uint) (*models.Bookmark, error) {
 	log.Debugw("[func GetBookmarkById]", "id", id)
 
@@ -39,6 +55,14 @@ func GetBookmarkById(id uint) (*models.Bookmark, error) {
 	return found, nil
 }
 
+// GetAllBookmarks : [offset:offset+limit] 범위에 해당하는 북마크 정보 배열 반환. offset, limit 입력 없을 시 전체 목록 반환.
+//
+// # Parameters
+//   - params *models.GetAllBookmarksRequest: offset(int), limit(int) 포함
+//
+// # Returns
+//   - []models.Bookmark: DB에 해당 범위가 존재하면 북마크 객체 목록 반환, 없다면 nil 반환
+//   - error: Custom error or [gorm.DB.Error]
 func GetAllBookmarks(params *models.GetAllBookmarksRequest) ([]models.Bookmark, error) {
 	log.Debugw("[func GetAllBookmarks]", "params", params)
 

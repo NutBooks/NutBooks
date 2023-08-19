@@ -10,9 +10,14 @@ definitions:
   models.AddBookmarkRequest:
     properties:
       link:
+        description: |-
+          북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고
+
+          [go-playground/validator]: https://github.com/go-playground/validator
         example: https://cheesecat47.github.io
         type: string
       title:
+        description: 북마크 제목. 공백이면 og:title로 대체
         type: string
       user_id:
         minimum: 1
@@ -22,6 +27,17 @@ definitions:
     - user_id
     type: object
   models.AddBookmarkResponse:
+    properties:
+      data:
+        allOf:
+        - $ref: '#/definitions/models.Bookmark'
+        description: 생성된 북마크 정보
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.AddBookmarkWithErrorResponse:
     properties:
       data: {}
       error:
@@ -103,8 +119,13 @@ definitions:
       id:
         type: integer
       link:
+        description: |-
+          북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고
+
+          [go-playground/validator]: https://github.com/go-playground/validator
         type: string
       title:
+        description: 북마크 제목. 공백이면 og:title로 대체
         type: string
       updatedAt:
         type: string
@@ -131,6 +152,24 @@ definitions:
         type: string
     type: object
   models.GetAllBookmarksResponse:
+    properties:
+      data:
+        properties:
+          data:
+            description: 북마크 정보 배열
+            items:
+              $ref: '#/definitions/models.Bookmark'
+            type: array
+          size:
+            description: 북마크 배열 길이
+            type: integer
+        type: object
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.GetAllBookmarksWithErrorResponse:
     properties:
       data: {}
       error:
@@ -165,6 +204,17 @@ definitions:
         type: string
     type: object
   models.GetBookmarkByIdResponse:
+    properties:
+      data:
+        allOf:
+        - $ref: '#/definitions/models.Bookmark'
+        description: ID가 일치하는 북마크 정보
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.GetBookmarkByIdWithErrorResponse:
     properties:
       data: {}
       error:
@@ -278,14 +328,14 @@ paths:
       summary: 로그인 API
       tags:
       - auth
-  /api/v1/bookmark/:
+  /api/v1/bookmark:
     get:
       parameters:
-      - description: limit과 offset은 같이 입력해야 합니다
+      - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
         type: integer
-      - description: limit과 offset은 같이 입력해야 합니다
+      - description: limit 개수만큼 조회할 때 사용
         in: query
         name: limit
         type: integer
@@ -295,18 +345,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/models.GetAllBookmarksResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/models.Bookmark'
-                  type: array
-              type: object
+            $ref: '#/definitions/models.GetAllBookmarksResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GetAllBookmarksResponse'
+            $ref: '#/definitions/models.GetAllBookmarksWithErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.GetAllBookmarksWithErrorResponse'
       summary: 특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환
       tags:
       - bookmark
@@ -324,23 +371,22 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/models.AddBookmarkResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Bookmark'
-              type: object
+            $ref: '#/definitions/models.AddBookmarkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.AddBookmarkResponse'
+            $ref: '#/definitions/models.AddBookmarkWithErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.AddBookmarkWithErrorResponse'
       summary: 특정 유저가 북마크를 DB에 추가하는 API
       tags:
       - bookmark
-  /api/v1/bookmark/{id}/:
+  /api/v1/bookmark/{id}:
     get:
       parameters:
       - description: Bookmark ID
@@ -354,16 +400,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/models.GetBookmarkByIdResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Bookmark'
-              type: object
+            $ref: '#/definitions/models.GetBookmarkByIdResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.GetBookmarkByIdResponse'
+            $ref: '#/definitions/models.GetBookmarkByIdWithErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.GetBookmarkByIdWithErrorResponse'
       summary: 특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환
       tags:
       - bookmark
