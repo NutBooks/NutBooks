@@ -29,9 +29,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/login/": {
+        "/api/v1/auth/login": {
             "post": {
-                "description": "비밀번호는 영문 + 숫자 8-12자리",
+                "description": "로그인 성공 시 200 \"Success\" 메시지 반환.\n이메일 문제 시 400 \"Email not found\", 비밀번호 문제 시 \"Failed to login\" 반환.\n로그인 중 서버 문제 발생 시 \"Failed to check ***\" 반환.",
                 "produces": [
                     "application/json"
                 ],
@@ -41,7 +41,7 @@ const docTemplate = `{
                 "summary": "로그인 API",
                 "parameters": [
                     {
-                        "description": "body params",
+                        "description": "비밀번호는 영문 + 숫자 8-12자리",
                         "name": "params",
                         "in": "body",
                         "required": true,
@@ -60,19 +60,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.LogInResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.LogInResponse"
+                            "$ref": "#/definitions/models.LogInWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.LogInResponse"
+                            "$ref": "#/definitions/models.LogInWithErrorResponse"
                         }
                     }
                 }
@@ -735,20 +729,41 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 5,
-                    "example": ""
+                    "example": "cheesecat47@gmail.com"
                 },
                 "password": {
+                    "description": "영문 + 숫자 8-12자리",
                     "type": "string",
                     "maxLength": 12,
                     "minLength": 8,
-                    "example": "비밀번호는 영문 + 숫자 8-12자리"
+                    "example": "qwerty123"
                 }
             }
         },
         "models.LogInResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "ID가 일치하는 비밀번호 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Password"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LogInWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -757,6 +772,33 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Password": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "description": "영문 + 숫자 8-12자리",
+                    "type": "string"
+                },
+                "salt": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },

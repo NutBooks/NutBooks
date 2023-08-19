@@ -31,7 +31,7 @@ func PublicRoutes(app *fiber.App) {
 
 	// Auth router
 	auth := v1.Group("/auth")
-	auth.Post("/login/", controllers.LogInHandler)
+	auth.Post("/login", controllers.LogInHandler)
 }
 
 // Root func

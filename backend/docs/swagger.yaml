@@ -244,12 +244,17 @@ definitions:
   models.LogInRequest:
     properties:
       email:
-        example: ""
+        description: |-
+          5~50자 길이. 자세한 형식은 [go-playground/validator] 참고
+
+          [go-playground/validator]: https://github.com/go-playground/validator
+        example: cheesecat47@gmail.com
         maxLength: 50
         minLength: 5
         type: string
       password:
-        example: 비밀번호는 영문 + 숫자 8-12자리
+        description: 영문 + 숫자 8-12자리
+        example: qwerty123
         maxLength: 12
         minLength: 8
         type: string
@@ -259,11 +264,40 @@ definitions:
     type: object
   models.LogInResponse:
     properties:
+      data:
+        allOf:
+        - $ref: '#/definitions/models.Password'
+        description: ID가 일치하는 비밀번호 정보
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  models.LogInWithErrorResponse:
+    properties:
       data: {}
       error:
         type: boolean
       message:
         type: string
+    type: object
+  models.Password:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      password:
+        description: 영문 + 숫자 8-12자리
+        type: string
+      salt:
+        type: integer
+      updatedAt:
+        type: string
+      userID:
+        type: integer
     type: object
   models.User:
     properties:
@@ -296,11 +330,14 @@ paths:
       summary: Root URL - for health check
       tags:
       - /
-  /api/v1/auth/login/:
+  /api/v1/auth/login:
     post:
-      description: 비밀번호는 영문 + 숫자 8-12자리
+      description: |-
+        로그인 성공 시 200 "Success" 메시지 반환.
+        이메일 문제 시 400 "Email not found", 비밀번호 문제 시 "Failed to login" 반환.
+        로그인 중 서버 문제 발생 시 "Failed to check ***" 반환.
       parameters:
-      - description: body params
+      - description: 비밀번호는 영문 + 숫자 8-12자리
         in: body
         name: params
         required: true
@@ -316,15 +353,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.LogInResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.LogInResponse'
+            $ref: '#/definitions/models.LogInWithErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.LogInResponse'
+            $ref: '#/definitions/models.LogInWithErrorResponse'
       summary: 로그인 API
       tags:
       - auth

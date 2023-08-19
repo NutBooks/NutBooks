@@ -29,7 +29,7 @@ func controllersTestApp(t *testing.T) {
 
 	// Auth router
 	auth := route.Group("/auth")
-	auth.Post("/login/", LogInHandler)
+	auth.Post("/login", LogInHandler)
 
 	// bookmark
 	bookmark := route.Group("/bookmark")

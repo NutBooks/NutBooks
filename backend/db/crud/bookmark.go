@@ -21,7 +21,7 @@ func AddBookmark(bookmark *models.Bookmark) (*models.Bookmark, error) {
 
 	result := conn.DB.Create(bookmark)
 	if result == nil {
-		return nil, errors.New("[func AddBookmark]Failed to create this bookmark")
+		return nil, errors.New("[func AddBookmark] Failed to create this bookmark")
 	}
 	if result.Error != nil {
 		return nil, result.Error

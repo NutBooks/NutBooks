@@ -110,7 +110,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 	user := &models.User{}
 	result = conn.DB.First(user, found.UserID)
 	if result == nil {
-		return nil, errors.New("Cannot find this user")
+		return nil, errors.New("[func GetUserByEmail] Cannot find this user")
 	}
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, result.Error
