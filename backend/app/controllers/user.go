@@ -6,7 +6,6 @@ import (
 	"api/db/crud"
 	"api/db/models"
 	"errors"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -19,16 +18,17 @@ import (
 //	@Accept		json
 //	@Produce	json
 //	@Param		params	body		models.AddUserRequest	true	"비밀번호는 영문 + 숫자 8-12자리"
-//	@Success	201		{object}	models.AddUserResponse{data=models.User}
-//	@Failure	400		{object}	models.AddUserResponse{}
-//	@Failure	500		{object}	models.AddUserResponse{}
+//	@Success	201		{object}	models.AddUserResponse
+//	@Failure	400		{object}	models.AddUserWithErrorResponse
+//	@Failure	500		{object}	models.AddUserWithErrorResponse
 //	@Router		/api/v1/user [post]
 func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
-	if err := c.BodyParser(params); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
+	err := c.BodyParser(params)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserWithErrorResponse{
 			Error:   true,
-			Message: fmt.Sprintf("Failed to parse parameters: %v", err.Error()),
+			Message: "Failed to parse parameters",
 			Data:    err,
 		})
 	}
@@ -36,7 +36,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserWithErrorResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
@@ -47,15 +47,15 @@ func AddUserHandler(c *fiber.Ctx) error {
 	checkEmail, err := crud.GetUserByEmail(params.Email)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+			return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserWithErrorResponse{
 				Error:   true,
-				Message: fmt.Sprintf("Failed to check email duplicate: %v", err.Error()),
+				Message: "Failed to check email duplicate",
 				Data:    err,
 			})
 		}
 	}
 	if checkEmail != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserWithErrorResponse{
 			Error:   true,
 			Message: "This email is already in use",
 			Data:    nil,
@@ -71,10 +71,10 @@ func AddUserHandler(c *fiber.Ctx) error {
 	user, err = crud.AddUser(user, tx)
 	if err != nil {
 		tx.Rollback()
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserWithErrorResponse{
 			Error:   true,
-			Message: fmt.Sprintf("Failed to create user: %v", err.Error()),
-			Data:    nil,
+			Message: "Failed to create user",
+			Data:    err,
 		})
 	}
 	log.Debugw("[func AddUserHandler]", "user", user)
@@ -86,10 +86,10 @@ func AddUserHandler(c *fiber.Ctx) error {
 	authentication, err = crud.AddAuthenticationByUserId(authentication, tx)
 	if err != nil {
 		tx.Rollback()
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserWithErrorResponse{
 			Error:   true,
-			Message: fmt.Sprintf("Failed to create authentication: %v", err.Error()),
-			Data:    nil,
+			Message: "Failed to create authentication",
+			Data:    err,
 		})
 	}
 	log.Debugw("[func AddUserHandler]", "authentication", authentication)
@@ -101,10 +101,10 @@ func AddUserHandler(c *fiber.Ctx) error {
 	password, err = crud.AddPasswordByUserId(password, tx)
 	if err != nil {
 		tx.Rollback()
-		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddUserWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to create password",
+			Data:    err,
 		})
 	}
 	log.Debugw("[func AddUserHandler]", "password", password)
@@ -124,25 +124,27 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Tags		user
 //	@Produce	json
 //	@Param		id	path		uint	true	"User ID"
-//	@Success	200	{object}	models.GetUserByIdResponse{data=models.User}
-//	@Failure	400	{object}	models.GetUserByIdResponse{}
-//	@Failure	500	{object}	models.AddUserResponse{}
+//	@Success	200	{object}	models.GetUserByIdResponse
+//	@Failure	400	{object}	models.GetUserByIdWithErrorResponse
+//	@Failure	500	{object}	models.GetUserByIdWithErrorResponse
 //	@Router		/api/v1/user/{id} [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
+	// check authentication
+
 	params := &models.GetUserByIdRequest{}
 	err := c.ParamsParser(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to parse parameters",
+			Data:    err,
 		})
 	}
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdWithErrorResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
@@ -152,11 +154,19 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 
 	found, err := crud.GetUserById(params.ID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdWithErrorResponse{
+				Error:   true,
+				Message: "record not found",
+				Data:    err,
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdWithErrorResponse{
+				Error:   true,
+				Message: "Failed to get user",
+				Data:    err,
+			})
+		}
 	}
 	log.Debugw("[func GetUserByIdHandler]", "found", found)
 
@@ -172,28 +182,29 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Summary	모든 유저 목록 반환
 //	@Tags		user
 //	@Produce	json
-//	@Param		offset	query		int	false	"limit과 offset은 같이 입력해야 합니다."
-//	@Param		limit	query		int	false	"limit과 offset은 같이 입력해야 합니다."
-//	@Success	200		{object}	models.GetAllUsersResponse{data=[]models.User{}}
-//	@Failure	400		{object}	models.GetAllUsersResponse{}
-//
-//	@Failure	500		{object}	models.GetAllUsersResponse{}
+//	@Param		offset	query		int	false	"특정 id부터 조회할 때 사용"
+//	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
+//	@Success	200		{object}	models.GetAllUsersResponse
+//	@Failure	400		{object}	models.GetAllUsersWithErrorResponse
+//	@Failure	500		{object}	models.GetAllUsersWithErrorResponse
 //	@Router		/api/v1/user [get]
 func GetAllUsersHandler(c *fiber.Ctx) error {
+	// check authentication
+
 	params := &models.GetAllUsersRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to parse parameters",
+			Data:    err,
 		})
 	}
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersWithErrorResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
@@ -203,10 +214,10 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 
 	found, err := crud.GetAllUsers(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllUsersWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to get users",
+			Data:    err,
 		})
 	}
 	log.Debugw("[func GetAllUsersHandler]", "found", found)
@@ -214,7 +225,13 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(models.GetAllUsersResponse{
 		Error:   false,
 		Message: "Success",
-		Data:    found,
+		Data: struct {
+			Data []models.User `json:"data"`
+			Size int           `json:"size"`
+		}{
+			Data: found,
+			Size: len(found),
+		},
 	})
 }
 
@@ -225,25 +242,25 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 //	@Tags			user
 //	@Produce		json
 //	@Param			email	query		string	true	"중복 체크 할 이메일 주소 입력. 최대 길이 50자 제한."
-//	@Success		200		{object}	models.CheckEmailDuplicateResponse{}
-//	@Failure		400		{object}	models.CheckEmailDuplicateResponse{}
-//	@Failure		500		{object}	models.CheckEmailDuplicateResponse{}
+//	@Success		200		{object}	models.CheckEmailDuplicateResponse
+//	@Failure		400		{object}	models.CheckEmailDuplicateWithErrorResponse
+//	@Failure		500		{object}	models.CheckEmailDuplicateWithErrorResponse
 //	@Router			/api/v1/user/check-email [get]
 func CheckEmailDuplicateHandler(c *fiber.Ctx) error {
 	params := &models.CheckEmailDuplicateRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.CheckEmailDuplicateResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.CheckEmailDuplicateWithErrorResponse{
 			Error:   true,
-			Message: fmt.Sprintf("Failed to parse query parameters: %v", err.Error()),
-			Data:    nil,
+			Message: "Failed to parse query parameters",
+			Data:    err,
 		})
 	}
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.CheckEmailDuplicateResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.CheckEmailDuplicateWithErrorResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
@@ -260,9 +277,9 @@ func CheckEmailDuplicateHandler(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		} else {
-			return c.Status(fiber.StatusInternalServerError).JSON(models.CheckEmailDuplicateResponse{
+			return c.Status(fiber.StatusInternalServerError).JSON(models.CheckEmailDuplicateWithErrorResponse{
 				Error:   true,
-				Message: err.Error(),
+				Message: "Failed to get email",
 				Data:    err,
 			})
 		}

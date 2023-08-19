@@ -35,6 +35,10 @@ func testAuthenticationController(t *testing.T) {
 	t.Run("testLogInHandler", testLogInHandler)
 }
 
+// testLogInHandler : [controllers.LogInHandler] 테스트
+//
+// # Test Cases
+//   - Case 1: 정상적으로 로그인 성공
 func testLogInHandler(t *testing.T) {
 	testCases := []struct {
 		name            string

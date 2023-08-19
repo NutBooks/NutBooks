@@ -29,9 +29,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/login/": {
+        "/api/v1/auth/login": {
             "post": {
-                "description": "비밀번호는 영문 + 숫자 8-12자리",
+                "description": "로그인 성공 시 200 \"Success\" 메시지 반환.\n이메일 문제 시 400 \"Email not found\", 비밀번호 문제 시 \"Failed to login\" 반환.\n로그인 중 서버 문제 발생 시 \"Failed to check ***\" 반환.",
                 "produces": [
                     "application/json"
                 ],
@@ -41,7 +41,7 @@ const docTemplate = `{
                 "summary": "로그인 API",
                 "parameters": [
                     {
-                        "description": "body params",
+                        "description": "비밀번호는 영문 + 숫자 8-12자리",
                         "name": "params",
                         "in": "body",
                         "required": true,
@@ -60,25 +60,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.LogInResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.LogInResponse"
+                            "$ref": "#/definitions/models.LogInWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.LogInResponse"
+                            "$ref": "#/definitions/models.LogInWithErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/api/v1/bookmark/": {
+        "/api/v1/bookmark": {
             "get": {
                 "produces": [
                     "application/json"
@@ -90,13 +84,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다",
+                        "description": "특정 id부터 조회할 때 사용",
                         "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다",
+                        "description": "limit 개수만큼 조회할 때 사용",
                         "name": "limit",
                         "in": "query"
                     }
@@ -105,28 +99,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetAllBookmarksResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.Bookmark"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetAllBookmarksResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAllBookmarksResponse"
+                            "$ref": "#/definitions/models.GetAllBookmarksWithErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAllBookmarksWithErrorResponse"
                         }
                     }
                 }
@@ -155,34 +140,28 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.AddBookmarkResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Bookmark"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.AddBookmarkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.AddBookmarkResponse"
+                            "$ref": "#/definitions/models.AddBookmarkWithErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AddBookmarkWithErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/api/v1/bookmark/{id}/": {
+        "/api/v1/bookmark/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -204,25 +183,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetBookmarkByIdResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Bookmark"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetBookmarkByIdResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetBookmarkByIdResponse"
+                            "$ref": "#/definitions/models.GetBookmarkByIdWithErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetBookmarkByIdWithErrorResponse"
                         }
                     }
                 }
@@ -240,13 +213,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다.",
+                        "description": "특정 id부터 조회할 때 사용",
                         "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "limit과 offset은 같이 입력해야 합니다.",
+                        "description": "limit 개수만큼 조회할 때 사용",
                         "name": "limit",
                         "in": "query"
                     }
@@ -255,34 +228,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetAllUsersResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.User"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetAllUsersResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAllUsersResponse"
+                            "$ref": "#/definitions/models.GetAllUsersWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.GetAllUsersResponse"
+                            "$ref": "#/definitions/models.GetAllUsersWithErrorResponse"
                         }
                     }
                 }
@@ -313,31 +271,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.AddUserResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.AddUserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserResponse"
+                            "$ref": "#/definitions/models.AddUserWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserResponse"
+                            "$ref": "#/definitions/models.AddUserWithErrorResponse"
                         }
                     }
                 }
@@ -372,13 +318,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                            "$ref": "#/definitions/models.CheckEmailDuplicateWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.CheckEmailDuplicateResponse"
+                            "$ref": "#/definitions/models.CheckEmailDuplicateWithErrorResponse"
                         }
                     }
                 }
@@ -406,31 +352,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.GetUserByIdResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/models.GetUserByIdResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.GetUserByIdResponse"
+                            "$ref": "#/definitions/models.GetUserByIdWithErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.AddUserResponse"
+                            "$ref": "#/definitions/models.GetUserByIdWithErrorResponse"
                         }
                     }
                 }
@@ -458,10 +392,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "link": {
+                    "description": "북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "example": "https://cheesecat47.github.io"
                 },
                 "title": {
+                    "description": "북마크 제목. 공백이면 og:title로 대체",
                     "type": "string"
                 },
                 "user_id": {
@@ -471,6 +407,25 @@ const docTemplate = `{
             }
         },
         "models.AddBookmarkResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "생성된 북마크 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Bookmark"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AddBookmarkWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -491,29 +446,47 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "description": "이메일 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 5,
-                    "example": ""
+                    "example": "cheesecat47@gmail.com"
                 },
                 "name": {
-                    "description": "사용자 이름. 알파벳, 숫자, 유니코드 문자 사용 가능.",
+                    "description": "알파벳, 숫자, 유니코드 문자 사용 가능",
                     "type": "string",
                     "maxLength": 50,
-                    "minLength": 1,
-                    "example": ""
+                    "minLength": 1
                 },
                 "password": {
-                    "description": "비밀번호는 영문 + 숫자 8-12자리",
+                    "description": "영문 + 숫자 8-12자리",
                     "type": "string",
                     "maxLength": 12,
                     "minLength": 8,
-                    "example": ""
+                    "example": "qwerty123"
                 }
             }
         },
         "models.AddUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "생성된 유저 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AddUserWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -522,6 +495,30 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Authentication": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },
@@ -538,9 +535,11 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "link": {
+                    "description": "북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string"
                 },
                 "title": {
+                    "description": "북마크 제목. 공백이면 og:title로 대체",
                     "type": "string"
                 },
                 "updatedAt": {
@@ -552,6 +551,25 @@ const docTemplate = `{
             }
         },
         "models.CheckEmailDuplicateResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "생성된 인증 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Authentication"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CheckEmailDuplicateWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -566,6 +584,33 @@ const docTemplate = `{
         "models.GetAllBookmarksResponse": {
             "type": "object",
             "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "description": "북마크 정보 배열",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Bookmark"
+                            }
+                        },
+                        "size": {
+                            "description": "북마크 배열 길이",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetAllBookmarksWithErrorResponse": {
+            "type": "object",
+            "properties": {
                 "data": {},
                 "error": {
                     "type": "boolean"
@@ -576,6 +621,33 @@ const docTemplate = `{
             }
         },
         "models.GetAllUsersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "description": "유저 정보 배열",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.User"
+                            }
+                        },
+                        "size": {
+                            "description": "유저 배열 길이",
+                            "type": "integer"
+                        }
+                    }
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetAllUsersWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -590,6 +662,25 @@ const docTemplate = `{
         "models.GetBookmarkByIdResponse": {
             "type": "object",
             "properties": {
+                "data": {
+                    "description": "ID가 일치하는 북마크 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Bookmark"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetBookmarkByIdWithErrorResponse": {
+            "type": "object",
+            "properties": {
                 "data": {},
                 "error": {
                     "type": "boolean"
@@ -600,6 +691,25 @@ const docTemplate = `{
             }
         },
         "models.GetUserByIdResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "ID가 일치하는 유저 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetUserByIdWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -619,20 +729,41 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 5,
-                    "example": ""
+                    "example": "cheesecat47@gmail.com"
                 },
                 "password": {
+                    "description": "영문 + 숫자 8-12자리",
                     "type": "string",
                     "maxLength": 12,
                     "minLength": 8,
-                    "example": "비밀번호는 영문 + 숫자 8-12자리"
+                    "example": "qwerty123"
                 }
             }
         },
         "models.LogInResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "ID가 일치하는 비밀번호 정보",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Password"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LogInWithErrorResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -641,6 +772,33 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Password": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "description": "영문 + 숫자 8-12자리",
+                    "type": "string"
+                },
+                "salt": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },
@@ -661,7 +819,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
-                    "description": "사용자 이름.\n\n알파벳, 숫자, 유니코드 문자 사용 가능\n\n[AddUserRequest.Name] 으로 입력 시 validation",
+                    "description": "알파벳, 숫자, 유니코드 문자 사용 가능",
                     "type": "string"
                 },
                 "updatedAt": {

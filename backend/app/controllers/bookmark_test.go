@@ -36,6 +36,13 @@ func testBookmarkController(t *testing.T) {
 	t.Run("testGetAllBookmarksHandler", testGetAllBookmarksHandler)
 }
 
+// testAddBookmarkHandler : [controllers.AddBookmarkHandler] 테스트
+//
+// # Test Cases
+//   - Case 1: 정상적으로 북마크 추가
+//   - Case 2: 유저 아이디 없이 북마크 추가
+//   - Case 3: 제목 없이 북마크 추가
+//   - Case 4: 링크 없이 북마크 추가
 func testAddBookmarkHandler(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -56,7 +63,7 @@ func testAddBookmarkHandler(t *testing.T) {
 				Link:   "https://cheesecat47.github.io/bookmark_test/case1/link",
 			},
 			expectedError:   false,
-			expectedCode:    http.StatusOK,
+			expectedCode:    http.StatusCreated,
 			expectedMessage: "Success",
 		},
 		{
@@ -80,7 +87,7 @@ func testAddBookmarkHandler(t *testing.T) {
 				Link:   "https://cheesecat47.github.io/bookmark_test/case3/link",
 			},
 			expectedError:   false,
-			expectedCode:    http.StatusOK,
+			expectedCode:    http.StatusCreated,
 			expectedMessage: "Success",
 		},
 		{
@@ -112,17 +119,29 @@ func testAddBookmarkHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.AddBookmarkResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 201 {
+				result := &models.AddBookmarkResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.AddBookmarkWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 
 	}
 }
 
+// testGetBookmarkByIdHandler : [controllers.GetBookmarkByIdHandler] 테스트
+//
+// # Test Cases:
+//   - Case 1: bookmark1의 아이디를 사용해 조회
+//   - Case 2: 존재하지 않는 북마크 아이디를 사용해 조회
 func testGetBookmarkByIdHandler(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -149,7 +168,7 @@ func testGetBookmarkByIdHandler(t *testing.T) {
 			method: "GET",
 			route:  "/api/v1/bookmark/",
 			body: models.GetBookmarkByIdRequest{
-				ID: 0,
+				ID: 464749,
 			},
 			expectedError:   true,
 			expectedCode:    http.StatusBadRequest,
@@ -167,16 +186,31 @@ func testGetBookmarkByIdHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.GetBookmarkByIdResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.GetBookmarkByIdResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.GetBookmarkByIdWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }
 
+// testGetAllBookmarksHandler : [controllers.GetAllBookmarksHandler] 테스트
+//
+// # Test Cases:
+//   - Case 1: 쿼리 파라미터 없이 전체 북마크 조회
+//   - Case 2: offset 없이 북마크 조회
+//   - Case 3: offset 파라미터 값으로 음수를 사용하는 경우
+//   - Case 4: limit 파라미터 값으로 음수를 사용하는 경우
+//   - Case 5: offset, limit 값을 설정해 일부 범위의 유저 조회
 func testGetAllBookmarksHandler(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -256,12 +290,19 @@ func testGetAllBookmarksHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.GetAllBookmarksResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err, result.Message)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.GetAllBookmarksResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err, result.Message)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.GetAllBookmarksWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err, result.Message)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }

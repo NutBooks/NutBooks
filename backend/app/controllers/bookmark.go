@@ -4,8 +4,10 @@ import (
 	"api/app/utils"
 	"api/db/crud"
 	"api/db/models"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"gorm.io/gorm"
 )
 
 // AddBookmarkHandler
@@ -15,10 +17,11 @@ import (
 //	@Tags			bookmark
 //	@Accept			json
 //	@Produce		json
-//	@Param			params	body		models.AddBookmarkRequest{}	true	"body params"
-//	@Success		200		{object}	models.AddBookmarkResponse{data=models.Bookmark}
-//	@Failure		400		{object}	models.AddBookmarkResponse{}
-//	@Router			/api/v1/bookmark/ [post]
+//	@Param			params	body		models.AddBookmarkRequest	true	"body params"
+//	@Success		201		{object}	models.AddBookmarkResponse
+//	@Failure		400		{object}	models.AddBookmarkWithErrorResponse
+//	@Failure		500		{object}	models.AddBookmarkWithErrorResponse
+//	@Router			/api/v1/bookmark [post]
 func AddBookmarkHandler(c *fiber.Ctx) error {
 	// Get claims from JWT
 	// Check user permissions to create a new bookmark
@@ -26,7 +29,7 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 	params := &models.AddBookmarkRequest{}
 	err := c.BodyParser(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkWithErrorResponse{
 			Error:   true,
 			Message: err.Error(),
 			Data:    err,
@@ -36,7 +39,7 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddUserResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkWithErrorResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
@@ -51,15 +54,15 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 	}
 	bookmark, err = crud.AddBookmark(bookmark)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.AddBookmarkResponse{
+		return c.Status(fiber.StatusInternalServerError).JSON(models.AddBookmarkWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to create bookmark",
+			Data:    err,
 		})
 	}
 	log.Debugw("[func AddBookmarkHandler]", "bookmark", bookmark)
 
-	return c.Status(fiber.StatusOK).JSON(models.AddBookmarkResponse{
+	return c.Status(fiber.StatusCreated).JSON(models.AddBookmarkResponse{
 		Error:   false,
 		Message: "Success",
 		Data:    bookmark,
@@ -72,38 +75,49 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 //	@Tags		bookmark
 //	@Produce	json
 //	@Param		id	path		uint	true	"Bookmark ID"
-//	@Success	200	{object}	models.GetBookmarkByIdResponse{data=models.Bookmark}
-//	@Failure	400	{object}	models.GetBookmarkByIdResponse{}
-//	@Router		/api/v1/bookmark/{id}/ [get]
+//	@Success	200	{object}	models.GetBookmarkByIdResponse
+//	@Failure	400	{object}	models.GetBookmarkByIdWithErrorResponse
+//	@Failure	500	{object}	models.GetBookmarkByIdWithErrorResponse
+//	@Router		/api/v1/bookmark/{id} [get]
 func GetBookmarkByIdHandler(c *fiber.Ctx) error {
-	params := models.Bookmark{}
-	err := c.ParamsParser(&params)
+	// check authentication
+
+	params := &models.GetBookmarkByIdRequest{}
+	err := c.ParamsParser(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to parse parameters",
+			Data:    err,
 		})
 	}
 
 	validator := &utils.Validator{}
 	validateError := validator.Validate(params)
 	if validateError != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdWithErrorResponse{
 			Error:   true,
-			Data:    validateError,
 			Message: "Validation failed",
+			Data:    validateError,
 		})
 	}
 	log.Infow("[func GetBookmarkByIdHandler]", "params", params)
 
 	found, err := crud.GetBookmarkById(params.ID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdResponse{
-			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
-		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdWithErrorResponse{
+				Error:   true,
+				Message: "record not found",
+				Data:    err,
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.GetBookmarkByIdWithErrorResponse{
+				Error:   true,
+				Message: "Failed to get bookmark",
+				Data:    err,
+			})
+		}
 	}
 	log.Debugw("[func GetBookmarkByIdHandler]", "found", found)
 
@@ -119,26 +133,29 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 //	@Summary	특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환
 //	@Tags		bookmark
 //	@Produce	json
-//	@Param		offset	query		int	false	"limit과 offset은 같이 입력해야 합니다"
-//	@Param		limit	query		int	false	"limit과 offset은 같이 입력해야 합니다"
-//	@Success	200		{object}	models.GetAllBookmarksResponse{data=[]models.Bookmark{}}
-//	@Failure	400		{object}	models.GetAllBookmarksResponse{}
-//	@Router		/api/v1/bookmark/ [get]
+//	@Param		offset	query		int	false	"특정 id부터 조회할 때 사용"
+//	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
+//	@Success	200		{object}	models.GetAllBookmarksResponse
+//	@Failure	400		{object}	models.GetAllBookmarksWithErrorResponse
+//	@Failure	500		{object}	models.GetAllBookmarksWithErrorResponse
+//	@Router		/api/v1/bookmark [get]
 func GetAllBookmarksHandler(c *fiber.Ctx) error {
+	// check authentication
+
 	params := &models.GetAllBookmarksRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to parse parameters",
+			Data:    err,
 		})
 	}
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
 	if validateErrs != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksWithErrorResponse{
 			Error:   true,
 			Message: "Validation failed",
 			Data:    validateErrs,
@@ -148,10 +165,10 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 
 	found, err := crud.GetAllBookmarks(params)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksResponse{
+		return c.Status(fiber.StatusBadRequest).JSON(models.GetAllBookmarksWithErrorResponse{
 			Error:   true,
-			Message: err.Error(),
-			Data:    nil,
+			Message: "Failed to get bookmarks",
+			Data:    err,
 		})
 	}
 	log.Debugw("[func GetAllBookmarksHandler]", "found", found)
@@ -159,6 +176,12 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(models.GetAllBookmarksResponse{
 		Error:   false,
 		Message: "Success",
-		Data:    found,
+		Data: struct {
+			Data []models.Bookmark `json:"data"`
+			Size int               `json:"size"`
+		}{
+			Data: found,
+			Size: len(found),
+		},
 	})
 }
