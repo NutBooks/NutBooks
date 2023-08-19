@@ -63,7 +63,7 @@ func testAddBookmarkHandler(t *testing.T) {
 				Link:   "https://cheesecat47.github.io/bookmark_test/case1/link",
 			},
 			expectedError:   false,
-			expectedCode:    http.StatusOK,
+			expectedCode:    http.StatusCreated,
 			expectedMessage: "Success",
 		},
 		{
@@ -87,7 +87,7 @@ func testAddBookmarkHandler(t *testing.T) {
 				Link:   "https://cheesecat47.github.io/bookmark_test/case3/link",
 			},
 			expectedError:   false,
-			expectedCode:    http.StatusOK,
+			expectedCode:    http.StatusCreated,
 			expectedMessage: "Success",
 		},
 		{
@@ -119,12 +119,19 @@ func testAddBookmarkHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.AddBookmarkResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 201 {
+				result := &models.AddBookmarkResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.AddBookmarkWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 
 	}
@@ -161,7 +168,7 @@ func testGetBookmarkByIdHandler(t *testing.T) {
 			method: "GET",
 			route:  "/api/v1/bookmark/",
 			body: models.GetBookmarkByIdRequest{
-				ID: 0,
+				ID: 464749,
 			},
 			expectedError:   true,
 			expectedCode:    http.StatusBadRequest,
@@ -179,12 +186,19 @@ func testGetBookmarkByIdHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.GetBookmarkByIdResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.GetBookmarkByIdResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.GetBookmarkByIdWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }
@@ -276,12 +290,19 @@ func testGetAllBookmarksHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.GetAllBookmarksResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err, result.Message)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.GetAllBookmarksResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err, result.Message)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.GetAllBookmarksWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err, result.Message)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }

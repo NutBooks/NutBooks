@@ -154,11 +154,19 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 
 	found, err := crud.GetUserById(params.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdWithErrorResponse{
-			Error:   true,
-			Message: "Failed to get user",
-			Data:    err,
-		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusBadRequest).JSON(models.GetUserByIdWithErrorResponse{
+				Error:   true,
+				Message: "record not found",
+				Data:    err,
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.GetUserByIdWithErrorResponse{
+				Error:   true,
+				Message: "Failed to get user",
+				Data:    err,
+			})
+		}
 	}
 	log.Debugw("[func GetUserByIdHandler]", "found", found)
 

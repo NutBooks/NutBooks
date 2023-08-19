@@ -52,7 +52,7 @@ type (
 // [api/app/controllers.GetBookmarkByIdHandler]에서 사용하는 요청/응답 구조체
 type (
 	GetBookmarkByIdRequest struct {
-		ID uint `validate:"required,number,min=1" json:"bookmark_id"`
+		ID uint `validate:"required,number,min=1" json:"id"`
 	}
 
 	GetBookmarkByIdResponse struct {

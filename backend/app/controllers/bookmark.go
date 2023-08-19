@@ -4,8 +4,10 @@ import (
 	"api/app/utils"
 	"api/db/crud"
 	"api/db/models"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"gorm.io/gorm"
 )
 
 // AddBookmarkHandler
@@ -81,7 +83,7 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 	// check authentication
 
 	params := &models.GetBookmarkByIdRequest{}
-	err := c.ParamsParser(&params)
+	err := c.ParamsParser(params)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdWithErrorResponse{
 			Error:   true,
@@ -103,11 +105,19 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 
 	found, err := crud.GetBookmarkById(params.ID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdWithErrorResponse{
-			Error:   true,
-			Message: "Failed to get bookmark",
-			Data:    err,
-		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusBadRequest).JSON(models.GetBookmarkByIdWithErrorResponse{
+				Error:   true,
+				Message: "record not found",
+				Data:    err,
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(models.GetBookmarkByIdWithErrorResponse{
+				Error:   true,
+				Message: "Failed to get bookmark",
+				Data:    err,
+			})
+		}
 	}
 	log.Debugw("[func GetBookmarkByIdHandler]", "found", found)
 

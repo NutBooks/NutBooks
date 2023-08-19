@@ -148,12 +148,19 @@ func testAddUserHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.AddUserResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 201 {
+				result := &models.AddUserResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.AddUserWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }
@@ -212,12 +219,19 @@ func testGetUserByIdHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.GetUserByIdResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.GetUserByIdResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.GetUserByIdWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }
@@ -298,12 +312,19 @@ func testGetAllUsersHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.GetAllUsersResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.GetAllUsersResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.GetAllUsersWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }
@@ -372,12 +393,19 @@ func testCheckEmailDuplicateHandler(t *testing.T) {
 			t.Log("resp: ", resp)
 			require.NoError(t, err)
 
-			result := &models.CheckEmailDuplicateResponse{}
-			err = json.NewDecoder(resp.Body).Decode(result)
-			require.NoError(t, err)
-
-			require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
-			require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			if resp.StatusCode == 200 {
+				result := &models.CheckEmailDuplicateResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			} else if resp.StatusCode == 400 || resp.StatusCode == 500 {
+				result := &models.CheckEmailDuplicateWithErrorResponse{}
+				err = json.NewDecoder(resp.Body).Decode(result)
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedCode, resp.StatusCode, result.Message)
+				require.Equal(t, tt.expectedMessage, result.Message, result.Message)
+			}
 		})
 	}
 }
