@@ -55,3 +55,12 @@ type (
 		Message string      `json:"message"`
 	}
 )
+
+// 인증 미들웨어에서 사용하는 에러 응답 구조체
+type (
+	JwtErrorResponse struct {
+		Error   bool        `json:"error"`
+		Data    interface{} `json:"data"`
+		Message string      `json:"message"`
+	}
+)
