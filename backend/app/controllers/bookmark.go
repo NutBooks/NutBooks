@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"api/app/middlewares"
 	"api/app/utils"
 	"api/db/crud"
 	"api/db/models"
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
@@ -23,9 +25,6 @@ import (
 //	@Failure		500		{object}	models.AddBookmarkWithErrorResponse
 //	@Router			/api/v1/bookmark [post]
 func AddBookmarkHandler(c *fiber.Ctx) error {
-	// Get claims from JWT
-	// Check user permissions to create a new bookmark
-
 	params := &models.AddBookmarkRequest{}
 	err := c.BodyParser(params)
 	if err != nil {
@@ -46,6 +45,16 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func AddBookmarkHandler]", "params", params)
+
+	token := c.Locals("user_id").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.AddBookmarkWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	bookmark := &models.Bookmark{
 		UserID: params.UserID,
@@ -77,11 +86,10 @@ func AddBookmarkHandler(c *fiber.Ctx) error {
 //	@Param		id	path		uint	true	"Bookmark ID"
 //	@Success	200	{object}	models.GetBookmarkByIdResponse
 //	@Failure	400	{object}	models.GetBookmarkByIdWithErrorResponse
+//	@Failure	401	{object}	models.GetBookmarkByIdWithErrorResponse
 //	@Failure	500	{object}	models.GetBookmarkByIdWithErrorResponse
 //	@Router		/api/v1/bookmark/{id} [get]
 func GetBookmarkByIdHandler(c *fiber.Ctx) error {
-	// check authentication
-
 	params := &models.GetBookmarkByIdRequest{}
 	err := c.ParamsParser(params)
 	if err != nil {
@@ -102,6 +110,16 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func GetBookmarkByIdHandler]", "params", params)
+
+	token := c.Locals("user_id").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.GetBookmarkByIdWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	found, err := crud.GetBookmarkById(params.ID)
 	if err != nil {
@@ -137,11 +155,10 @@ func GetBookmarkByIdHandler(c *fiber.Ctx) error {
 //	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
 //	@Success	200		{object}	models.GetAllBookmarksResponse
 //	@Failure	400		{object}	models.GetAllBookmarksWithErrorResponse
+//	@Failure	401		{object}	models.GetAllBookmarksWithErrorResponse
 //	@Failure	500		{object}	models.GetAllBookmarksWithErrorResponse
 //	@Router		/api/v1/bookmark [get]
 func GetAllBookmarksHandler(c *fiber.Ctx) error {
-	// check authentication
-
 	params := &models.GetAllBookmarksRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
@@ -162,6 +179,16 @@ func GetAllBookmarksHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func GetAllBookmarksHandler]", "params", params)
+
+	token := c.Locals("user_id").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.GetAllBookmarksWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	found, err := crud.GetAllBookmarks(params)
 	if err != nil {

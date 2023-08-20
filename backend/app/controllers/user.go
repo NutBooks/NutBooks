@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/app/middlewares"
 	"api/app/utils"
 	conn "api/db"
 	"api/db/crud"
@@ -8,6 +9,7 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
@@ -126,11 +128,10 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Param		id	path		uint	true	"User ID"
 //	@Success	200	{object}	models.GetUserByIdResponse
 //	@Failure	400	{object}	models.GetUserByIdWithErrorResponse
+//	@Failure	401	{object}	models.GetUserByIdWithErrorResponse
 //	@Failure	500	{object}	models.GetUserByIdWithErrorResponse
 //	@Router		/api/v1/user/{id} [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
-	// check authentication
-
 	params := &models.GetUserByIdRequest{}
 	err := c.ParamsParser(params)
 	if err != nil {
@@ -151,6 +152,16 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func GetUserByIdHandler]", "params", params)
+
+	token := c.Locals("user_id").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.GetUserByIdWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	found, err := crud.GetUserById(params.ID)
 	if err != nil {
@@ -186,6 +197,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
 //	@Success	200		{object}	models.GetAllUsersResponse
 //	@Failure	400		{object}	models.GetAllUsersWithErrorResponse
+//	@Failure	401		{object}	models.GetAllUsersWithErrorResponse
 //	@Failure	500		{object}	models.GetAllUsersWithErrorResponse
 //	@Router		/api/v1/user [get]
 func GetAllUsersHandler(c *fiber.Ctx) error {
@@ -211,6 +223,16 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func GetAllUsersHandler]", "params", params)
+
+	token := c.Locals("user_id").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.GetAllUsersWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	found, err := crud.GetAllUsers(params)
 	if err != nil {

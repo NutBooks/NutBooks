@@ -2,9 +2,11 @@ package middlewares
 
 import (
 	"api/db/models"
+	"errors"
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v5"
 	"os"
 )
 
@@ -27,6 +29,15 @@ func Protected() fiber.Handler {
 		JWTHandler = &newJwtHandler
 	}
 	return *JWTHandler
+}
+
+func ValidToken(t *jwt.Token, id uint) error {
+	claims := t.Claims.(jwt.MapClaims)
+	if claims["user_id"] == id {
+		return nil
+	} else {
+		return errors.New("Invalid token")
+	}
 }
 
 func jwtErrorHandler(c *fiber.Ctx, err error) error {
