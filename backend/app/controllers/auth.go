@@ -1,13 +1,16 @@
 package controllers
 
 import (
+	"api/app/middlewares"
 	"api/app/utils"
 	"api/db/crud"
 	"api/db/models"
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
+	"time"
 )
 
 // LogInHandler
@@ -21,6 +24,7 @@ import (
 //	@Param			params	body		models.LogInRequest	true	"비밀번호는 영문 + 숫자 8-12자리"
 //	@Success		200		{object}	models.LogInResponse
 //	@Failure		400		{object}	models.LogInWithErrorResponse
+//	@Failure		401		{object}	models.LogInWithErrorResponse
 //	@Failure		500		{object}	models.LogInWithErrorResponse
 //	@Router			/api/v1/auth/login [post]
 func LogInHandler(c *fiber.Ctx) error {
@@ -48,7 +52,7 @@ func LogInHandler(c *fiber.Ctx) error {
 	user, err := crud.GetUserByEmail(params.Email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) || err.Error() == "[func GetUserByEmail] Cannot find this user" || err.Error() == "[func GetUserByEmail] Cannot find this user" {
-			return c.Status(fiber.StatusBadRequest).JSON(models.LogInWithErrorResponse{
+			return c.Status(fiber.StatusUnauthorized).JSON(models.LogInWithErrorResponse{
 				Error:   true,
 				Message: "Email not found",
 				Data:    err,
@@ -61,11 +65,18 @@ func LogInHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
+	if user == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.LogInWithErrorResponse{
+			Error:   true,
+			Message: "User not found",
+			Data:    err,
+		})
+	}
 
 	password, err := crud.GetPasswordByUserId(user.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) || err.Error() == "[func GetPasswordByUserId] Cannot find this password" {
-			return c.Status(fiber.StatusBadRequest).JSON(models.LogInWithErrorResponse{
+			return c.Status(fiber.StatusUnauthorized).JSON(models.LogInWithErrorResponse{
 				Error:   true,
 				Message: "Failed to login",
 				Data:    err,
@@ -78,11 +89,33 @@ func LogInHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
-
-	if params.Password != password.Password {
-		return c.Status(fiber.StatusBadRequest).JSON(models.LogInWithErrorResponse{
+	if password == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.LogInWithErrorResponse{
 			Error:   true,
 			Message: "Failed to login",
+			Data:    err,
+		})
+	}
+	// 현재는 PW가 평문으로 오는데 추후 hashing 추가하면 여기서 확인
+	if params.Password != password.Password {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.LogInWithErrorResponse{
+			Error:   true,
+			Message: "Failed to login",
+			Data:    err,
+		})
+	}
+
+	claims := jwt.MapClaims{
+		"name":      user.Name,
+		"authority": user.Authority,
+		"exp":       time.Now().Add(time.Hour * 72).Unix(),
+	}
+
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(middlewares.JWTSecret))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.LogInWithErrorResponse{
+			Error:   true,
+			Message: "Failed to create JWT token",
 			Data:    err,
 		})
 	}
@@ -90,6 +123,10 @@ func LogInHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(models.LogInResponse{
 		Error:   false,
 		Message: "Success",
-		Data:    nil,
+		Data: struct {
+			AccessToken string `json:"access_token"`
+		}{
+			AccessToken: accessToken,
+		},
 	})
 }

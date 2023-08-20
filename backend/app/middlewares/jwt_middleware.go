@@ -10,17 +10,18 @@ import (
 
 var (
 	JWTHandler *fiber.Handler
+	JWTSecret  string
 )
 
 func Protected() fiber.Handler {
 	if JWTHandler == nil {
-		jwtSecret, exists := os.LookupEnv("JWT_SECRET")
+		JWTSecret, exists := os.LookupEnv("JWT_SECRET")
 		if !exists {
-			log.Fatalw("[func Protected] Missing JWT Secret", "jwtSecret", jwtSecret)
+			log.Fatalw("[func Protected] Missing JWT Secret", "JWTSecret", JWTSecret)
 			os.Exit(1)
 		}
 		newJwtHandler := jwtware.New(jwtware.Config{
-			SigningKey:   jwtware.SigningKey{Key: []byte(jwtSecret)},
+			SigningKey:   jwtware.SigningKey{Key: []byte(JWTSecret)},
 			ErrorHandler: jwtErrorHandler,
 		})
 		JWTHandler = &newJwtHandler

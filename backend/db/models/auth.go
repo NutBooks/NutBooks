@@ -44,9 +44,11 @@ type (
 	}
 
 	LogInResponse struct {
-		Error   bool      `json:"error"`
-		Data    *Password `json:"data"` // ID가 일치하는 비밀번호 정보
-		Message string    `json:"message"`
+		Error bool `json:"error"`
+		Data  struct {
+			AccessToken string `json:"access_token"`
+		} `json:"data"` // 로그인 성공 시 토큰 반환
+		Message string `json:"message"`
 	}
 
 	LogInWithErrorResponse struct {
