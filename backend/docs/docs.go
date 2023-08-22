@@ -10,13 +10,15 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "email": "cheesecat47@gmail.com"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/": {
+        "/": {
             "get": {
                 "tags": [
                     "/"
@@ -29,7 +31,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/login": {
+        "/auth/login": {
             "post": {
                 "description": "로그인 성공 시 200 \"Success\" 메시지 반환.\n이메일 문제 시 400 \"Email not found\", 비밀번호 문제 시 \"Failed to login\" 반환.\n로그인 중 서버 문제 발생 시 \"Failed to check ***\" 반환.",
                 "produces": [
@@ -63,6 +65,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.LogInWithErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.LogInWithErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -72,8 +80,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookmark": {
+        "/bookmark": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -108,6 +121,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.GetAllBookmarksWithErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAllBookmarksWithErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -117,6 +136,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.",
                 "consumes": [
                     "application/json"
@@ -161,8 +185,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookmark/{id}": {
+        "/bookmark/{id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -192,6 +221,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.GetBookmarkByIdWithErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetBookmarkByIdWithErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -201,8 +236,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user": {
+        "/user": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -233,6 +273,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetAllUsersWithErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.GetAllUsersWithErrorResponse"
                         }
@@ -289,7 +335,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/check-email": {
+        "/user/check-email": {
             "get": {
                 "description": "입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 True 반환, 없다면 False 반환.",
                 "produces": [
@@ -330,8 +376,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/{id}": {
+        "/user/{id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -357,6 +408,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetUserByIdWithErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/models.GetUserByIdWithErrorResponse"
                         }
@@ -748,12 +805,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {
-                    "description": "ID가 일치하는 비밀번호 정보",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Password"
+                    "description": "로그인 성공 시 토큰 반환",
+                    "type": "object",
+                    "properties": {
+                        "access_token": {
+                            "type": "string"
                         }
-                    ]
+                    }
                 },
                 "error": {
                     "type": "boolean"
@@ -772,33 +830,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "models.Password": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "description": "영문 + 숫자 8-12자리",
-                    "type": "string"
-                },
-                "salt": {
-                    "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "integer"
                 }
             }
         },
@@ -827,17 +858,25 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "AccessToken",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0.0",
 	Host:             "",
-	BasePath:         "",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "NutBooks API",
+	Description:      "Nutbooks API documentation",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

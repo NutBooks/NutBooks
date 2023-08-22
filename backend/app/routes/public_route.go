@@ -49,7 +49,7 @@ func PublicRoutes(app *fiber.App) {
 //	@Summary	Root URL - for health check
 //	@Success	200
 //	@Tags		/
-//	@Router		/api/v1/ [get]
+//	@Router		/ [get]
 func Root(c *fiber.Ctx) error {
 	return c.SendString("Hi")
 }

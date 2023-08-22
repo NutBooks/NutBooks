@@ -26,7 +26,7 @@ import (
 //	@Failure		400		{object}	models.LogInWithErrorResponse
 //	@Failure		401		{object}	models.LogInWithErrorResponse
 //	@Failure		500		{object}	models.LogInWithErrorResponse
-//	@Router			/api/v1/auth/login [post]
+//	@Router			/auth/login [post]
 func LogInHandler(c *fiber.Ctx) error {
 	params := &models.LogInRequest{}
 	err := c.BodyParser(params)

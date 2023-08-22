@@ -23,7 +23,7 @@ import (
 //	@Success	201		{object}	models.AddUserResponse
 //	@Failure	400		{object}	models.AddUserWithErrorResponse
 //	@Failure	500		{object}	models.AddUserWithErrorResponse
-//	@Router		/api/v1/user [post]
+//	@Router		/user [post]
 func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 	err := c.BodyParser(params)
@@ -125,12 +125,13 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Summary	UserID를 사용해 유저 1명 정보 읽기
 //	@Tags		user
 //	@Produce	json
+//	@Security	ApiKeyAuth
 //	@Param		id	path		uint	true	"User ID"
 //	@Success	200	{object}	models.GetUserByIdResponse
 //	@Failure	400	{object}	models.GetUserByIdWithErrorResponse
 //	@Failure	401	{object}	models.GetUserByIdWithErrorResponse
 //	@Failure	500	{object}	models.GetUserByIdWithErrorResponse
-//	@Router		/api/v1/user/{id} [get]
+//	@Router		/user/{id} [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
 	err := c.ParamsParser(params)
@@ -193,13 +194,14 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Summary	모든 유저 목록 반환
 //	@Tags		user
 //	@Produce	json
+//	@Security	ApiKeyAuth
 //	@Param		offset	query		int	false	"특정 id부터 조회할 때 사용"
 //	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
 //	@Success	200		{object}	models.GetAllUsersResponse
 //	@Failure	400		{object}	models.GetAllUsersWithErrorResponse
 //	@Failure	401		{object}	models.GetAllUsersWithErrorResponse
 //	@Failure	500		{object}	models.GetAllUsersWithErrorResponse
-//	@Router		/api/v1/user [get]
+//	@Router		/user [get]
 func GetAllUsersHandler(c *fiber.Ctx) error {
 	// check authentication
 
@@ -267,7 +269,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 //	@Success		200		{object}	models.CheckEmailDuplicateResponse
 //	@Failure		400		{object}	models.CheckEmailDuplicateWithErrorResponse
 //	@Failure		500		{object}	models.CheckEmailDuplicateWithErrorResponse
-//	@Router			/api/v1/user/check-email [get]
+//	@Router			/user/check-email [get]
 func CheckEmailDuplicateHandler(c *fiber.Ctx) error {
 	params := &models.CheckEmailDuplicateRequest{}
 	err := c.QueryParser(params)

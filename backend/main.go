@@ -1,12 +1,20 @@
 package main
 
 import (
-	"api/app"
+	"api/app/middlewares"
+	"api/app/routes"
+	"api/configs"
 	"api/db"
+	_ "api/docs"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -55,7 +63,7 @@ var runCmd = &cobra.Command{
 		)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		app.RunServer()
+		runServer()
 	},
 }
 
@@ -67,4 +75,76 @@ var migrateDB = &cobra.Command{
 		log.Println("Migrate")
 		db.MigrateMysql()
 	},
+}
+
+// ----------------------------------------------------------------
+//
+// API Server
+// https://docs.gofiber.io/
+//
+// ----------------------------------------------------------------
+
+//	@title			NutBooks API
+//	@version		1.0.0
+//	@description	Nutbooks API documentation
+
+//	@contact.email	cheesecat47@gmail.com
+//	@licence.name	MIT
+
+//	@BasePath	/api/v1
+
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description				AccessToken
+func runServer() {
+	config := configs.FiberConfig()
+
+	db.Connect()
+
+	app := fiber.New(config)
+
+	middlewares.FiberMiddleware(app)
+
+	// limit 3 requests per 10 seconds max
+	app.Use(limiter.New(limiter.Config{
+		Expiration: 1 * time.Hour,
+		Max:        1000,
+	}))
+
+	// https://github.com/swaggo/swag#declarative-comments-format
+	routes.SwaggerRoute(app)
+	routes.PublicRoutes(app)
+
+	if app == nil {
+		log.Panicf("Cannot create app")
+	}
+
+	// Graceful shutdown
+	// https://github.com/gofiber/recipes/tree/master/graceful-shutdown
+	go func() {
+		port, exists := os.LookupEnv("API_PORT")
+		if !exists {
+			log.Println("No API_PORT environment variable. Use default value.")
+			port = "8081"
+		}
+		if err := app.Listen(":" + port); err != nil {
+			log.Panic(err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+
+	// notify at interrupt or termination
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	_ = <-c
+	log.Printf("\nGraceful shutting down...")
+	_ = app.Shutdown()
+
+	log.Println("Running cleanup tasks...")
+
+	// cleanup tasks
+	// db.Close()
+	log.Println("Fiber was successful shutdown.")
 }
