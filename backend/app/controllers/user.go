@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // AddUserHandler
@@ -126,11 +127,12 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Tags		user
 //	@Produce	json
 //	@Security	ApiKeyAuth
-//	@Param		id	path		uint	true	"User ID"
-//	@Success	200	{object}	models.GetUserByIdResponse
-//	@Failure	400	{object}	models.GetUserByIdWithErrorResponse
-//	@Failure	401	{object}	models.GetUserByIdWithErrorResponse
-//	@Failure	500	{object}	models.GetUserByIdWithErrorResponse
+//	@Param		User-Id	header		int		true	"현재 유저 아이디"
+//	@Param		id		path		uint	true	"User ID"
+//	@Success	200		{object}	models.GetUserByIdResponse
+//	@Failure	400		{object}	models.GetUserByIdWithErrorResponse
+//	@Failure	401		{object}	models.GetUserByIdWithErrorResponse
+//	@Failure	500		{object}	models.GetUserByIdWithErrorResponse
 //	@Router		/user/{id} [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
 	params := &models.GetUserByIdRequest{}
@@ -142,6 +144,8 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 			Data:    err,
 		})
 	}
+	u64, _ := strconv.ParseUint(c.GetReqHeaders()["User-Id"], 10, 0)
+	params.UserID = uint(u64)
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
@@ -154,7 +158,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 	}
 	log.Infow("[func GetUserByIdHandler]", "params", params)
 
-	token := c.Locals("user_id").(*jwt.Token)
+	token := c.Locals("user").(*jwt.Token)
 	err = middlewares.ValidToken(token, params.UserID)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(models.GetUserByIdWithErrorResponse{
@@ -195,6 +199,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Tags		user
 //	@Produce	json
 //	@Security	ApiKeyAuth
+//	@Param		User-Id	header		int	true	"현재 유저 아이디"
 //	@Param		offset	query		int	false	"특정 id부터 조회할 때 사용"
 //	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
 //	@Success	200		{object}	models.GetAllUsersResponse
@@ -203,8 +208,6 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Failure	500		{object}	models.GetAllUsersWithErrorResponse
 //	@Router		/user [get]
 func GetAllUsersHandler(c *fiber.Ctx) error {
-	// check authentication
-
 	params := &models.GetAllUsersRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
@@ -214,6 +217,8 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 			Data:    err,
 		})
 	}
+	u64, _ := strconv.ParseUint(c.GetReqHeaders()["User-Id"], 10, 0)
+	params.UserID = uint(u64)
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
@@ -226,7 +231,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 	}
 	log.Infow("[func GetAllUsersHandler]", "params", params)
 
-	token := c.Locals("user_id").(*jwt.Token)
+	token := c.Locals("user").(*jwt.Token)
 	err = middlewares.ValidToken(token, params.UserID)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(models.GetAllUsersWithErrorResponse{

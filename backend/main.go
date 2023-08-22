@@ -98,11 +98,14 @@ var migrateDB = &cobra.Command{
 // @name						Authorization
 // @description				AccessToken
 func runServer() {
-	config := configs.FiberConfig()
+	configs.Config()
 
 	db.Connect()
 
-	app := fiber.New(config)
+	app := fiber.New(fiber.Config{
+		IdleTimeout: 5 * time.Second,
+		ReadTimeout: 60 * time.Second,
+	})
 
 	middlewares.FiberMiddleware(app)
 

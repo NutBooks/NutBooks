@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"api/app/middlewares"
 	"api/app/utils"
+	"api/configs"
 	"api/db/crud"
 	"api/db/models"
 	"errors"
@@ -109,9 +109,10 @@ func LogInHandler(c *fiber.Ctx) error {
 		"user_id":   user.ID,
 		"authority": user.Authority,
 		"exp":       time.Now().Add(time.Hour * 72).Unix(),
+		"iss":       "cheesecat47@gmail.com@Nutbooks",
 	}
 
-	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(middlewares.JWTSecret))
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(configs.JWTSecret))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.LogInWithErrorResponse{
 			Error:   true,

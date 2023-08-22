@@ -97,6 +97,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "description": "현재 유저 아이디",
+                        "name": "User-Id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
                         "description": "특정 id부터 조회할 때 사용",
                         "name": "offset",
                         "in": "query"
@@ -154,6 +161,13 @@ const docTemplate = `{
                 "summary": "특정 유저가 북마크를 DB에 추가하는 API",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "description": "현재 유저 아이디",
+                        "name": "User-Id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "body params",
                         "name": "params",
                         "in": "body",
@@ -200,6 +214,13 @@ const docTemplate = `{
                 ],
                 "summary": "특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "현재 유저 아이디",
+                        "name": "User-Id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "Bookmark ID",
@@ -251,6 +272,13 @@ const docTemplate = `{
                 ],
                 "summary": "모든 유저 목록 반환",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "현재 유저 아이디",
+                        "name": "User-Id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "특정 id부터 조회할 때 사용",
@@ -391,6 +419,13 @@ const docTemplate = `{
                 ],
                 "summary": "UserID를 사용해 유저 1명 정보 읽기",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "현재 유저 아이디",
+                        "name": "User-Id",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "User ID",

@@ -357,6 +357,11 @@ paths:
   /bookmark:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
@@ -394,6 +399,11 @@ paths:
       - application/json
       description: 새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: body params
         in: body
         name: params
@@ -423,6 +433,11 @@ paths:
   /bookmark/{id}:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: Bookmark ID
         in: path
         name: id
@@ -455,6 +470,11 @@ paths:
   /user:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
@@ -518,6 +538,11 @@ paths:
   /user/{id}:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: User ID
         in: path
         name: id
