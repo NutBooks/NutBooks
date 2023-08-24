@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/app/middlewares"
 	"api/app/utils"
 	conn "api/db"
 	"api/db/crud"
@@ -8,7 +9,9 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 // AddUserHandler
@@ -21,7 +24,7 @@ import (
 //	@Success	201		{object}	models.AddUserResponse
 //	@Failure	400		{object}	models.AddUserWithErrorResponse
 //	@Failure	500		{object}	models.AddUserWithErrorResponse
-//	@Router		/api/v1/user [post]
+//	@Router		/user [post]
 func AddUserHandler(c *fiber.Ctx) error {
 	params := &models.AddUserRequest{}
 	err := c.BodyParser(params)
@@ -123,14 +126,15 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Summary	UserID를 사용해 유저 1명 정보 읽기
 //	@Tags		user
 //	@Produce	json
-//	@Param		id	path		uint	true	"User ID"
-//	@Success	200	{object}	models.GetUserByIdResponse
-//	@Failure	400	{object}	models.GetUserByIdWithErrorResponse
-//	@Failure	500	{object}	models.GetUserByIdWithErrorResponse
-//	@Router		/api/v1/user/{id} [get]
+//	@Security	ApiKeyAuth
+//	@Param		User-Id	header		int		true	"현재 유저 아이디"
+//	@Param		id		path		uint	true	"User ID"
+//	@Success	200		{object}	models.GetUserByIdResponse
+//	@Failure	400		{object}	models.GetUserByIdWithErrorResponse
+//	@Failure	401		{object}	models.GetUserByIdWithErrorResponse
+//	@Failure	500		{object}	models.GetUserByIdWithErrorResponse
+//	@Router		/user/{id} [get]
 func GetUserByIdHandler(c *fiber.Ctx) error {
-	// check authentication
-
 	params := &models.GetUserByIdRequest{}
 	err := c.ParamsParser(params)
 	if err != nil {
@@ -140,6 +144,8 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 			Data:    err,
 		})
 	}
+	u64, _ := strconv.ParseUint(c.GetReqHeaders()["User-Id"], 10, 0)
+	params.UserID = uint(u64)
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
@@ -151,6 +157,16 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func GetUserByIdHandler]", "params", params)
+
+	token := c.Locals("user").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.GetUserByIdWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	found, err := crud.GetUserById(params.ID)
 	if err != nil {
@@ -182,15 +198,16 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Summary	모든 유저 목록 반환
 //	@Tags		user
 //	@Produce	json
+//	@Security	ApiKeyAuth
+//	@Param		User-Id	header		int	true	"현재 유저 아이디"
 //	@Param		offset	query		int	false	"특정 id부터 조회할 때 사용"
 //	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
 //	@Success	200		{object}	models.GetAllUsersResponse
 //	@Failure	400		{object}	models.GetAllUsersWithErrorResponse
+//	@Failure	401		{object}	models.GetAllUsersWithErrorResponse
 //	@Failure	500		{object}	models.GetAllUsersWithErrorResponse
-//	@Router		/api/v1/user [get]
+//	@Router		/user [get]
 func GetAllUsersHandler(c *fiber.Ctx) error {
-	// check authentication
-
 	params := &models.GetAllUsersRequest{}
 	err := c.QueryParser(params)
 	if err != nil {
@@ -200,6 +217,8 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 			Data:    err,
 		})
 	}
+	u64, _ := strconv.ParseUint(c.GetReqHeaders()["User-Id"], 10, 0)
+	params.UserID = uint(u64)
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
@@ -211,6 +230,16 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 		})
 	}
 	log.Infow("[func GetAllUsersHandler]", "params", params)
+
+	token := c.Locals("user").(*jwt.Token)
+	err = middlewares.ValidToken(token, params.UserID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.GetAllUsersWithErrorResponse{
+			Error:   true,
+			Message: err.Error(),
+			Data:    err,
+		})
+	}
 
 	found, err := crud.GetAllUsers(params)
 	if err != nil {
@@ -245,7 +274,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 //	@Success		200		{object}	models.CheckEmailDuplicateResponse
 //	@Failure		400		{object}	models.CheckEmailDuplicateWithErrorResponse
 //	@Failure		500		{object}	models.CheckEmailDuplicateWithErrorResponse
-//	@Router			/api/v1/user/check-email [get]
+//	@Router			/user/check-email [get]
 func CheckEmailDuplicateHandler(c *fiber.Ctx) error {
 	params := &models.CheckEmailDuplicateRequest{}
 	err := c.QueryParser(params)

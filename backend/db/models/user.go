@@ -78,7 +78,8 @@ type (
 // [api/app/controllers.GetUserByIdHandler]에서 사용하는 요청/응답 구조체
 type (
 	GetUserByIdRequest struct {
-		ID uint `validate:"required,number,min=1" json:"id"`
+		ID     uint `validate:"required,number,min=1" json:"id"`
+		UserID uint `validate:"required,number,min=1" json:"user_id"`
 	}
 
 	GetUserByIdResponse struct {
@@ -97,6 +98,8 @@ type (
 // [api/app/controllers.GetAllUsersHandler]에서 사용하는 요청/응답 구조체
 type (
 	GetAllUsersRequest struct {
+		UserID uint `validate:"required,number,min=1" json:"user_id"`
+
 		// 특정 id부터 조회할 때 사용
 		Offset int `validate:"number,min=0" json:"offset"`
 

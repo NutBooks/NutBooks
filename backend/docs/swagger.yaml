@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   gorm.DeletedAt:
     properties:
@@ -265,9 +266,11 @@ definitions:
   models.LogInResponse:
     properties:
       data:
-        allOf:
-        - $ref: '#/definitions/models.Password'
-        description: ID가 일치하는 비밀번호 정보
+        description: 로그인 성공 시 토큰 반환
+        properties:
+          access_token:
+            type: string
+        type: object
       error:
         type: boolean
       message:
@@ -280,24 +283,6 @@ definitions:
         type: boolean
       message:
         type: string
-    type: object
-  models.Password:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: integer
-      password:
-        description: 영문 + 숫자 8-12자리
-        type: string
-      salt:
-        type: integer
-      updatedAt:
-        type: string
-      userID:
-        type: integer
     type: object
   models.User:
     properties:
@@ -320,9 +305,13 @@ definitions:
         type: string
     type: object
 info:
-  contact: {}
+  contact:
+    email: cheesecat47@gmail.com
+  description: Nutbooks API documentation
+  title: NutBooks API
+  version: 1.0.0
 paths:
-  /api/v1/:
+  /:
     get:
       responses:
         "200":
@@ -330,7 +319,7 @@ paths:
       summary: Root URL - for health check
       tags:
       - /
-  /api/v1/auth/login:
+  /auth/login:
     post:
       description: |-
         로그인 성공 시 200 "Success" 메시지 반환.
@@ -354,6 +343,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.LogInWithErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.LogInWithErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -361,9 +354,14 @@ paths:
       summary: 로그인 API
       tags:
       - auth
-  /api/v1/bookmark:
+  /bookmark:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
@@ -383,10 +381,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetAllBookmarksWithErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.GetAllBookmarksWithErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.GetAllBookmarksWithErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: 특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환
       tags:
       - bookmark
@@ -395,6 +399,11 @@ paths:
       - application/json
       description: 새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: body params
         in: body
         name: params
@@ -416,12 +425,19 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.AddBookmarkWithErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: 특정 유저가 북마크를 DB에 추가하는 API
       tags:
       - bookmark
-  /api/v1/bookmark/{id}:
+  /bookmark/{id}:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: Bookmark ID
         in: path
         name: id
@@ -438,16 +454,27 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetBookmarkByIdWithErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.GetBookmarkByIdWithErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.GetBookmarkByIdWithErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: 특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환
       tags:
       - bookmark
-  /api/v1/user:
+  /user:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
@@ -467,10 +494,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetAllUsersWithErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.GetAllUsersWithErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.GetAllUsersWithErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: 모든 유저 목록 반환
       tags:
       - user
@@ -502,9 +535,14 @@ paths:
       summary: 새 유저 추가
       tags:
       - user
-  /api/v1/user/{id}:
+  /user/{id}:
     get:
       parameters:
+      - description: 현재 유저 아이디
+        in: header
+        name: User-Id
+        required: true
+        type: integer
       - description: User ID
         in: path
         name: id
@@ -521,14 +559,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/models.GetUserByIdWithErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.GetUserByIdWithErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.GetUserByIdWithErrorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: UserID를 사용해 유저 1명 정보 읽기
       tags:
       - user
-  /api/v1/user/check-email:
+  /user/check-email:
     get:
       description: 입력한 이메일을 사용하는 유저가 있다면 Body의 Message로 True 반환, 없다면 False 반환.
       parameters:
@@ -555,4 +599,10 @@ paths:
       summary: 이메일 중복 체크.
       tags:
       - user
+securityDefinitions:
+  ApiKeyAuth:
+    description: AccessToken
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

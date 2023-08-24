@@ -1,6 +1,7 @@
 package routes
 
 import (
+	_ "api/docs"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 )

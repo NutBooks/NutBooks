@@ -55,7 +55,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
-    command: 
+      API_PORT: ${API_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+    command:
       - /bin/bash
       - -c
       - |
