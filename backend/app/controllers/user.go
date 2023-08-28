@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 // AddUserHandler
@@ -127,7 +126,7 @@ func AddUserHandler(c *fiber.Ctx) error {
 //	@Tags		user
 //	@Produce	json
 //	@Security	ApiKeyAuth
-//	@Param		User-Id	header		int		true	"현재 유저 아이디"
+//	@Param		Email	header		string	true	"현재 유저 이메일"
 //	@Param		id		path		uint	true	"User ID"
 //	@Success	200		{object}	models.GetUserByIdResponse
 //	@Failure	400		{object}	models.GetUserByIdWithErrorResponse
@@ -144,8 +143,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 			Data:    err,
 		})
 	}
-	u64, _ := strconv.ParseUint(c.GetReqHeaders()["User-Id"], 10, 0)
-	params.UserID = uint(u64)
+	params.Email = c.GetReqHeaders()["Email"]
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
@@ -159,7 +157,7 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 	log.Infow("[func GetUserByIdHandler]", "params", params)
 
 	token := c.Locals("user").(*jwt.Token)
-	err = middlewares.ValidToken(token, params.UserID)
+	err = middlewares.ValidToken(token, params.Email)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(models.GetUserByIdWithErrorResponse{
 			Error:   true,
@@ -199,9 +197,9 @@ func GetUserByIdHandler(c *fiber.Ctx) error {
 //	@Tags		user
 //	@Produce	json
 //	@Security	ApiKeyAuth
-//	@Param		User-Id	header		int	true	"현재 유저 아이디"
-//	@Param		offset	query		int	false	"특정 id부터 조회할 때 사용"
-//	@Param		limit	query		int	false	"limit 개수만큼 조회할 때 사용"
+//	@Param		Email	header		string	true	"현재 유저 이메일"
+//	@Param		offset	query		int		false	"특정 id부터 조회할 때 사용"
+//	@Param		limit	query		int		false	"limit 개수만큼 조회할 때 사용"
 //	@Success	200		{object}	models.GetAllUsersResponse
 //	@Failure	400		{object}	models.GetAllUsersWithErrorResponse
 //	@Failure	401		{object}	models.GetAllUsersWithErrorResponse
@@ -217,8 +215,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 			Data:    err,
 		})
 	}
-	u64, _ := strconv.ParseUint(c.GetReqHeaders()["User-Id"], 10, 0)
-	params.UserID = uint(u64)
+	params.Email = c.GetReqHeaders()["Email"]
 
 	validator := &utils.Validator{}
 	validateErrs := validator.Validate(params)
@@ -232,7 +229,7 @@ func GetAllUsersHandler(c *fiber.Ctx) error {
 	log.Infow("[func GetAllUsersHandler]", "params", params)
 
 	token := c.Locals("user").(*jwt.Token)
-	err = middlewares.ValidToken(token, params.UserID)
+	err = middlewares.ValidToken(token, params.Email)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(models.GetAllUsersWithErrorResponse{
 			Error:   true,

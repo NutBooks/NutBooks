@@ -16,7 +16,7 @@ import (
 // LogInHandler
 //
 //	@Summary		로그인 API
-//	@Description	로그인 성공 시 200 "Success" 메시지 반환.
+//	@Description	로그인 성공 시 200 "Success" 메시지와 함께 Data로 AccessToken을 반환.
 //	@Description	이메일 문제 시 400 "Email not found", 비밀번호 문제 시 "Failed to login" 반환.
 //	@Description	로그인 중 서버 문제 발생 시 "Failed to check ***" 반환.
 //	@Tags			auth
@@ -106,7 +106,7 @@ func LogInHandler(c *fiber.Ctx) error {
 	}
 
 	claims := jwt.MapClaims{
-		"user_id":   user.ID,
+		"email":     params.Email,
 		"authority": user.Authority,
 		"exp":       time.Now().Add(time.Hour * 72).Unix(),
 		"iss":       "cheesecat47@gmail.com@Nutbooks",

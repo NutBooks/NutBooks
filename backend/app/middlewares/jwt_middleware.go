@@ -16,12 +16,12 @@ func Protected() fiber.Handler {
 	})
 }
 
-func ValidToken(t *jwt.Token, id uint) error {
+func ValidToken(t *jwt.Token, email string) error {
 	claims := t.Claims.(jwt.MapClaims)
-	if int(claims["user_id"].(float64)) == int(id) {
+	if claims["email"] == email {
 		return nil
 	} else {
-		return errors.New("Invalid token")
+		return errors.New("invalid token")
 	}
 }
 

@@ -33,7 +33,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "로그인 성공 시 200 \"Success\" 메시지 반환.\n이메일 문제 시 400 \"Email not found\", 비밀번호 문제 시 \"Failed to login\" 반환.\n로그인 중 서버 문제 발생 시 \"Failed to check ***\" 반환.",
+                "description": "로그인 성공 시 200 \"Success\" 메시지와 함께 Data로 AccessToken을 반환.\n이메일 문제 시 400 \"Email not found\", 비밀번호 문제 시 \"Failed to login\" 반환.\n로그인 중 서버 문제 발생 시 \"Failed to check ***\" 반환.",
                 "produces": [
                     "application/json"
                 ],
@@ -96,9 +96,9 @@ const docTemplate = `{
                 "summary": "특정 유저가 저장한 북마크 중 offset부터 limit까지 목록을 반환",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "현재 유저 아이디",
-                        "name": "User-Id",
+                        "type": "string",
+                        "description": "현재 유저 이메일",
+                        "name": "email",
                         "in": "header",
                         "required": true
                     },
@@ -161,9 +161,9 @@ const docTemplate = `{
                 "summary": "특정 유저가 북마크를 DB에 추가하는 API",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "현재 유저 아이디",
-                        "name": "User-Id",
+                        "type": "string",
+                        "description": "현재 유저 이메일",
+                        "name": "email",
                         "in": "header",
                         "required": true
                     },
@@ -215,9 +215,9 @@ const docTemplate = `{
                 "summary": "특정 유저가 저장한 북마크 중 id가 일치하는 북마크 상세 정보 1개를 반환",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "현재 유저 아이디",
-                        "name": "User-Id",
+                        "type": "string",
+                        "description": "현재 유저 이메일",
+                        "name": "email",
                         "in": "header",
                         "required": true
                     },
@@ -273,9 +273,9 @@ const docTemplate = `{
                 "summary": "모든 유저 목록 반환",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "현재 유저 아이디",
-                        "name": "User-Id",
+                        "type": "string",
+                        "description": "현재 유저 이메일",
+                        "name": "Email",
                         "in": "header",
                         "required": true
                     },
@@ -420,9 +420,9 @@ const docTemplate = `{
                 "summary": "UserID를 사용해 유저 1명 정보 읽기",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "현재 유저 아이디",
-                        "name": "User-Id",
+                        "type": "string",
+                        "description": "현재 유저 이메일",
+                        "name": "email",
                         "in": "header",
                         "required": true
                     },
@@ -479,10 +479,16 @@ const docTemplate = `{
         "models.AddBookmarkRequest": {
             "type": "object",
             "required": [
-                "link",
-                "user_id"
+                "email",
+                "link"
             ],
             "properties": {
+                "email": {
+                    "description": "5~50자 길이. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 5
+                },
                 "link": {
                     "description": "북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고\n\n[go-playground/validator]: https://github.com/go-playground/validator",
                     "type": "string",
@@ -491,10 +497,6 @@ const docTemplate = `{
                 "title": {
                     "description": "북마크 제목. 공백이면 og:title로 대체",
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "minimum": 1
                 }
             }
         },
