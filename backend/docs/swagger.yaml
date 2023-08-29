@@ -10,6 +10,14 @@ definitions:
     type: object
   models.AddBookmarkRequest:
     properties:
+      email:
+        description: |-
+          5~50자 길이. 자세한 형식은 [go-playground/validator] 참고
+
+          [go-playground/validator]: https://github.com/go-playground/validator
+        maxLength: 50
+        minLength: 5
+        type: string
       link:
         description: |-
           북마크(웹사이트) 링크. 자세한 형식은 [go-playground/validator] 참고
@@ -20,12 +28,9 @@ definitions:
       title:
         description: 북마크 제목. 공백이면 og:title로 대체
         type: string
-      user_id:
-        minimum: 1
-        type: integer
     required:
+    - email
     - link
-    - user_id
     type: object
   models.AddBookmarkResponse:
     properties:
@@ -322,7 +327,7 @@ paths:
   /auth/login:
     post:
       description: |-
-        로그인 성공 시 200 "Success" 메시지 반환.
+        로그인 성공 시 200 "Success" 메시지와 함께 Data로 AccessToken을 반환.
         이메일 문제 시 400 "Email not found", 비밀번호 문제 시 "Failed to login" 반환.
         로그인 중 서버 문제 발생 시 "Failed to check ***" 반환.
       parameters:
@@ -357,11 +362,11 @@ paths:
   /bookmark:
     get:
       parameters:
-      - description: 현재 유저 아이디
+      - description: 현재 유저 이메일
         in: header
-        name: User-Id
+        name: email
         required: true
-        type: integer
+        type: string
       - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
@@ -399,11 +404,11 @@ paths:
       - application/json
       description: 새 북마크를 DB에 저장. 북마크 링크는 필수 데이터이고, 그 외는 옵셔널.
       parameters:
-      - description: 현재 유저 아이디
+      - description: 현재 유저 이메일
         in: header
-        name: User-Id
+        name: email
         required: true
-        type: integer
+        type: string
       - description: body params
         in: body
         name: params
@@ -433,11 +438,11 @@ paths:
   /bookmark/{id}:
     get:
       parameters:
-      - description: 현재 유저 아이디
+      - description: 현재 유저 이메일
         in: header
-        name: User-Id
+        name: email
         required: true
-        type: integer
+        type: string
       - description: Bookmark ID
         in: path
         name: id
@@ -470,11 +475,11 @@ paths:
   /user:
     get:
       parameters:
-      - description: 현재 유저 아이디
+      - description: 현재 유저 이메일
         in: header
-        name: User-Id
+        name: Email
         required: true
-        type: integer
+        type: string
       - description: 특정 id부터 조회할 때 사용
         in: query
         name: offset
@@ -538,11 +543,11 @@ paths:
   /user/{id}:
     get:
       parameters:
-      - description: 현재 유저 아이디
+      - description: 현재 유저 이메일
         in: header
-        name: User-Id
+        name: email
         required: true
-        type: integer
+        type: string
       - description: User ID
         in: path
         name: id
