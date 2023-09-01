@@ -6,7 +6,9 @@ import (
 )
 
 var (
-	JWTSecret string
+	JWTSecret  string
+	FeDevHost  string
+	CorsSecret string
 )
 
 func Config() {
@@ -15,5 +17,15 @@ func Config() {
 	if !exists {
 		log.Fatalw("[func Protected] Missing JWT Secret", "JWTSecret", JWTSecret)
 		os.Exit(1)
+	}
+
+	FeDevHost, exists = os.LookupEnv("FE_DEV_HOST")
+	if !exists {
+		FeDevHost = ""
+	}
+
+	CorsSecret, exists = os.LookupEnv("CORS_SECRET")
+	if !exists {
+		CorsSecret = ""
 	}
 }
