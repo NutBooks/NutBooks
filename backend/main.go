@@ -107,6 +107,7 @@ func runServer() {
 		ReadTimeout: 60 * time.Second,
 	})
 
+	middlewares.CorsMiddleware(app)
 	middlewares.FiberMiddleware(app)
 
 	// limit 3 requests per 10 seconds max

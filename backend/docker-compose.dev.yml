@@ -13,12 +13,8 @@ services:
       - "./:/build"
       - ./wait-for-it.sh:/wait-for-it.sh
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_HOST: mysql
-      MYSQL_PORT: 3306
+      FE_DEV_HOST: ${FE_DEV_HOST}
+      CORS_SECRET: ${CORS_SECRET}
     command:
       - /bin/bash
       - -c
