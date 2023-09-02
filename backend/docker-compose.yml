@@ -36,6 +36,7 @@ services:
       MYSQL_PORT: 3306
       API_PORT: ${API_PORT}
       JWT_SECRET: ${JWT_SECRET}
+      ALLOW_ORIGINS: ${ALLOW_ORIGINS}
     command:
       - /bin/bash
       - -c
