@@ -6,10 +6,9 @@ import (
 )
 
 var (
-	JWTSecret     string
-	ALLOW_ORIGINS string
-	FeDevHost     string
-	CorsSecret    string
+	JWTSecret    string
+	AllowOrigins string
+	FeDevHost    string
 )
 
 func Config() {
@@ -20,19 +19,14 @@ func Config() {
 		os.Exit(1)
 	}
 
-	ALLOW_ORIGINS, exists = os.LookupEnv("ALLOW_ORIGINS")
+	AllowOrigins, exists = os.LookupEnv("ALLOW_ORIGINS")
 	if !exists {
-		log.Fatalw("[func Protected] Missing ALLOW_ORIGINS", "ALLOW_ORIGINS", ALLOW_ORIGINS)
+		log.Fatalw("[func Protected] Missing ALLOW_ORIGINS", "AllowOrigins", AllowOrigins)
 		os.Exit(1)
 	}
 
 	FeDevHost, exists = os.LookupEnv("FE_DEV_HOST")
 	if !exists {
 		FeDevHost = ""
-	}
-
-	CorsSecret, exists = os.LookupEnv("CORS_SECRET")
-	if !exists {
-		CorsSecret = ""
 	}
 }

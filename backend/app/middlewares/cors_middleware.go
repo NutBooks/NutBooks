@@ -7,7 +7,7 @@ import (
 )
 
 func CorsMiddleware(app *fiber.App) {
-	origins := "https://nutbooks.koreacentral.cloudapp.azure.com"
+	origins := configs.AllowOrigins
 	if configs.FeDevHost != "" {
 		origins += ", " + configs.FeDevHost
 	}
@@ -16,15 +16,4 @@ func CorsMiddleware(app *fiber.App) {
 		AllowOrigins: origins,
 		MaxAge:       600,
 	}))
-
-	app.Use(func(c *fiber.Ctx) error {
-		h := c.GetReqHeaders()
-		if configs.FeDevHost != "" && configs.CorsSecret != "" {
-			if h["Origin"] == configs.FeDevHost && h["X-Custom-Origin-Token"] == configs.CorsSecret {
-				return c.Next()
-			}
-		}
-		c.Response().Header.Set("Access-Control-Allow-Origin", "")
-		return c.SendStatus(fiber.StatusNoContent)
-	})
 }
