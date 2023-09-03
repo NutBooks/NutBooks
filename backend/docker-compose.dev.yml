@@ -14,7 +14,6 @@ services:
       - ./wait-for-it.sh:/wait-for-it.sh
     environment:
       FE_DEV_HOST: ${FE_DEV_HOST}
-      CORS_SECRET: ${CORS_SECRET}
     command:
       - /bin/bash
       - -c
