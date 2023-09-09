@@ -1,22 +1,22 @@
 # https://code-yeongyu.tistory.com/36
 
-FROM golang:1.20-alpine AS builder
+FROM golang:1.21-alpine AS builder
 LABEL authors="cheesecat47 <cheesecat47@gmail.com>"
 
 RUN apk update
 
 WORKDIR /build
 
-ENV GO111MODULE=on \
+ENV GO111MODULE=auto \
     CGO_ENABLE=0 \
     GOOS=linux
 
 COPY go.mod .
 COPY go.sum .
-RUN go mod tidy
+COPY vendor/ .
 
 COPY . .
-RUN go clean -cache && go build -o bin/main .
+RUN go build -v -o bin/main ./...
 
 FROM alpine:3.18
 

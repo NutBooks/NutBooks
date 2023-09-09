@@ -2,3 +2,4 @@ TestResult
 bin/
 tmp/
 .infisical.json
+vendor/*
